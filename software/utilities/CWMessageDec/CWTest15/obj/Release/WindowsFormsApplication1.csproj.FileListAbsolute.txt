@@ -1,0 +1,9 @@
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.exe.config
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.exe
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.pdb
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\cwtest.Form1.resources
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.csproj.GenerateResource.Cache
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.exe
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.pdb
+C:\Users\robl\documents\visual studio 2015\Projects\CWTest15\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.csprojResolveAssemblyReference.cache

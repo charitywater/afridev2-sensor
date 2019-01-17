@@ -1,0 +1,4 @@
+python createAfridevV2ManufMsg.py
+if exist Factory_App_Boot_MSP430.txt del Factory_App_Boot_MSP430.txt
+ren AfridevV2_App_Boot_MSP430.txt Factory_App_Boot_MSP430.txt
+python createAfridevV2AppMsg.py
