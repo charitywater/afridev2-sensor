@@ -228,7 +228,7 @@ uint8_t waterSense_analyzeData(void)
         {
             if (padStats.sequential_waters > padStats.water_limit)
             {
-                waterDetect_init();
+            	sysExecData.faultWaterDetect = true;
                 padStats.sequential_waters = 0;
                 sysExecData.waterDetectResets++;
 #ifdef WATER_DEBUG
@@ -258,7 +258,7 @@ uint8_t waterSense_analyzeData(void)
         {
             if (padStats.sequential_unknowns > padStats.unknown_limit)
             {
-                waterDetect_init();
+            	sysExecData.faultWaterDetect = true;
                 padStats.sequential_unknowns = 0;
                 sysExecData.waterDetectResets++;
 #ifdef WATER_DEBUG

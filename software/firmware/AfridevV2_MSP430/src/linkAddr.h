@@ -48,11 +48,11 @@ static uint16_t getAppImageLength(void)
 }
 static inline uint16_t getAppVectorTableAddr(void)
 {
-    return ((uint16_t)__App_Proxy_Vector_Start);
+    return ((uint16_t)&__App_Proxy_Vector_Start);
 }
 static inline uint16_t getAppResetVector(void)
 {
-    return ((uint16_t)__App_Reset_Vector);
+    return ((uint16_t)&__App_Reset_Vector);
 }
 static inline uint16_t getBootImageStartAddr(void)
 {

@@ -83,9 +83,8 @@ static bool startUpSendTestCheck(void);
 static void sendModemTestMsg(void);
 static void sendStartUpMsg1(void);
 static void sendStartUpMsg2(void);
-static void sendSensorDataMsg(void);
-
 #ifndef WATER_DEBUG
+static void sendSensorDataMsg(void);
 static void sysExec_doReboot(void);
 #endif
 
@@ -305,20 +304,28 @@ void sysExec_exec(void)
 #ifndef WATER_DEBUG
                     // wait until system startup sequences have finished and measurement data was seen at least once
                     // and baseline data recorded to queue up transmission
-                    else if (sysExecData.sendSensorDataMessage)
+                    else if (sysExecData.sendSensorDataMessage || sysExecData.faultWaterDetect)
                     {
                         // let the OTA reply for SENSOR_DATA get out before queuing up the reply message
                         // also be sure NO OTHER MESSAGE is being transmitted
                         if (mTestBaselineDone() && !dataMsgMgr_isSendMsgActive() && !mwBatchData.batchWriteActive)
                         {
                             // Tell the modem code to send the data
-                            if (sysExecData.sendSensorDataNow)
+                            // if the water detection got stuck reporting water or unknowns endlessly, we want to see data for this
+                            if (sysExecData.sendSensorDataNow || sysExecData.faultWaterDetect)
                             {
                                 sendSensorDataMsg();
                                 sysExecData.total_flow = 0;
                             }
                             else
                                 msgSched_scheduleSensorDataMessage();
+
+                            // clear out the data and start again
+                            if (sysExecData.faultWaterDetect)
+                            {
+                            	waterDetect_init();
+                            	sysExecData.faultWaterDetect = false;
+                            }
 
                             sysExecData.sendSensorDataMessage = false;
                         }
@@ -652,21 +659,15 @@ static void sendStartUpMsg2(void)
 /**
 * \brief Initiate sending the Sensor Data Message
 */
-
+#ifndef WATER_DEBUG
 static void sendSensorDataMsg(void)
 {
-
-#ifndef WATER_DEBUG
-
     uint8_t *payloadP;
     uint8_t payloadSize = manufRecord_getSensorDataMessage(&payloadP);
 
     dataMsgMgr_sendDataMsg(MSG_TYPE_SENSOR_DATA, payloadP, payloadSize);
-#else
-    debug_message("***Sensor Data Message ***");
-    __delay_cycles(1000);
-#endif
 }
+#endif
 
 /**
 * \brief Support utility for the OTA message that resets the 

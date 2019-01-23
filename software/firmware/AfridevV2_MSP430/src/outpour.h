@@ -93,7 +93,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x04
+#define FW_MINOR 0x05
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -348,6 +348,7 @@ typedef struct sysExecData_s {
     bool saveCapSensorBaselineData : 1;                    /**< Flag indicating that baseline cap sensor data must be stored */
     bool sendSensorDataMessage :1;                         /**< flag specifying if a sensor data report is requested */
     bool sendSensorDataNow: 1;                             /**< flag specifying that water data is immediately reported over Modem */
+    bool faultWaterDetect: 1;                              /**< flag specifying that water water or unknowns are stuck  */
     uint8_t waterDetectResets;                             /**< number of times the water detect algorithm data was cleared */
     uint8_t send_test_result;                              /**< result of sending the SEND_TEST message to the Modem */
     uint8_t led_on_time;                                   /**< number of iterations of the main loop that LED should remain on (2 sec resolution) */

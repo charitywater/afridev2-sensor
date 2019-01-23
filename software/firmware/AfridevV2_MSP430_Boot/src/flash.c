@@ -34,7 +34,8 @@ static bool msp430Flash_doesAppMatchBackup(void);
 *
 * \ingroup PUBLIC_API
 */
-void msp430Flash_erase_segment(uint8_t *flashSegmentAddrP) {
+void msp430Flash_erase_segment(uint8_t *flashSegmentAddrP) 
+{
     volatile uint16_t ms_check_count;
     volatile uint8_t contextSaveSR;
     volatile uint8_t checkCount = 0;
@@ -66,12 +67,14 @@ void msp430Flash_erase_segment(uint8_t *flashSegmentAddrP) {
      * erase one segment.
      */
     ms_check_count = 0;
-    while (FCTL3 & BUSY) {
+    while (FCTL3 & BUSY) 
+	{
         // rough loop delay of 1ms (assumes operating @ 1MHZ Clock);
         _delay_cycles(1000);
         ms_check_count++;
         // Check for timeout: ~100MS (1ms*100)
-        if (ms_check_count > 100) {
+        if (ms_check_count > 100) 
+		{
             break;
         }
     }
@@ -79,7 +82,8 @@ void msp430Flash_erase_segment(uint8_t *flashSegmentAddrP) {
     FCTL1 = (FWKEY | LOCK);         // Set LOCK bit
 
     // If the GIE was set, restore it.
-    if (contextSaveSR & GIE) {
+    if (contextSaveSR & GIE) 
+	{
         __bis_SR_register(GIE);
     }
 }
@@ -94,7 +98,8 @@ void msp430Flash_erase_segment(uint8_t *flashSegmentAddrP) {
 *
 * \ingroup PUBLIC_API
 */
-void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes) {
+void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes) 
+{
     volatile uint16_t i;
     volatile uint16_t us100_check_count;
     volatile uint8_t contextSaveSR;
@@ -110,7 +115,8 @@ void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes)
 
     // Write each byte
     us100_check_count = 0;
-    for (i = 0; i < num_bytes; i++) {
+    for (i = 0; i < num_bytes; i++) 
+	{
         us100_check_count = 0;
 
         *flashP++ = *srcP++;
@@ -130,12 +136,14 @@ void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes)
          * note - from empirical lab testing, it takes ~.15125ms to
          * program each byte.
          */
-        while (FCTL3 & BUSY) {
+        while (FCTL3 & BUSY) 
+		{
             // rough loop delay of 100us (assumes operating @ 1MHZ Clock);
             _delay_cycles(100);
             us100_check_count++;
             // Check for timeout: ~10MS (100us*100)
-            if (us100_check_count > 100) {
+            if (us100_check_count > 100) 
+			{
                 break;
             }
         }
@@ -145,7 +153,8 @@ void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes)
     FCTL1 = (FWKEY | LOCK);        // Set Lock
 
     // If the GIE was set, restore it.
-    if (contextSaveSR & GIE) {
+    if (contextSaveSR & GIE) 
+	{
         __bis_SR_register(GIE);
     }
 }
@@ -169,7 +178,8 @@ void msp430Flash_write_bytes(uint8_t *flashP, uint8_t *srcP, uint16_t num_bytes)
 *
 * \ingroup PUBLIC_API
 */
-fwCopyResult_t msp430Flash_moveAndVerifyBackupToApp(void) {
+fwCopyResult_t msp430Flash_moveAndVerifyBackupToApp(void) 
+{
     bool backupImageIsValid = false;
     uint16_t calcCrc = 0;
     uint16_t storedCrc = 0;
@@ -181,28 +191,36 @@ fwCopyResult_t msp430Flash_moveAndVerifyBackupToApp(void) {
     appRecord_getNewFirmwareInfo(&backupImageExists, &storedCrc);
 
     // Double check backup crc if there is a backup image
-    if (backupImageExists) {
+    if (backupImageExists) 
+	{
         // Perform CRC
         const unsigned char *dataP = (const unsigned char *)getBackupImageStartAddr();
         uint16_t imageLength = getAppImageLength();
         calcCrc = gen_crc16(dataP, imageLength);
-        if (calcCrc == storedCrc) {
+        if (calcCrc == storedCrc) 
+		{
             backupImageIsValid = true;
-        } else {
+        } 
+		else 
+		{
             fwCopyResult = FW_COPY_ERR_BAD_BACKUP_CRC;
         }
-    } else {
+    } 
+	else 
+	{
         fwCopyResult = FW_COPY_ERR_NO_BACKUP_IMAGE;
     }
 
     // If back image is valid, perform steps to move backup image to main image
     // location.
-    if (backupImageIsValid) {
+    if (backupImageIsValid) 
+	{
         uint8_t retryCount = 0;
         // zero the APP reset vector before proceeding.  This is how we know
         // there is not a valid main image in case anything happens (i.e. reboot).
         msp430Flash_zeroAppResetVector();
-        do {
+        do 
+		{
             // Erase main image
             msp430Flash_eraseAppImage();
             // Copy the Backup flash image to the App flash area
@@ -211,16 +229,20 @@ fwCopyResult_t msp430Flash_moveAndVerifyBackupToApp(void) {
             copySuccess = msp430Flash_doesAppMatchBackup();
         } while (!copySuccess && ++retryCount < 4);
 
-        if (copySuccess) {
+        if (copySuccess) 
+		{
             // Final check - perform CRC on new App image
             const unsigned char *dataP = (const unsigned char *)getAppImageStartAddr();
             uint16_t imageLength = getAppImageLength();
             calcCrc = gen_crc16(dataP, imageLength);
-            if (calcCrc != storedCrc) {
+            if (calcCrc != storedCrc) 
+			{
                 copySuccess = false;
                 fwCopyResult = FW_COPY_ERR_BAD_MAIN_CRC;
             }
-        } else {
+        } 
+		else 
+		{
             fwCopyResult = FW_COPY_ERR_COPY_FAILED;
         }
     }
@@ -240,7 +262,8 @@ fwCopyResult_t msp430Flash_moveAndVerifyBackupToApp(void) {
  *
  * \ingroup PUBLIC_API
 */
-void msp430Flash_zeroAppResetVector(void) {
+void msp430Flash_zeroAppResetVector(void) 
+{
     void (*tempP)(void) = 0;
     msp430Flash_write_bytes((uint8_t *)&__App_Reset_Vector, (uint8_t *)&tempP, sizeof(void (*)(void)));
 }
@@ -252,7 +275,8 @@ void msp430Flash_zeroAppResetVector(void) {
 /**
 * \brief Erase the main image in flash.
 */
-static void msp430Flash_eraseAppImage(void) {
+static void msp430Flash_eraseAppImage(void) 
+{
     uint8_t i;
     // Get number of sectors in the backup flash
     uint16_t numSectors = getNumSectorsInImage();
@@ -261,9 +285,11 @@ static void msp430Flash_eraseAppImage(void) {
     // For protection, get boot address to check against
     uint8_t *bootFlashStartAddrP = (uint8_t *)getBootImageStartAddr();
     // Erase the backup flash segments
-    for (i = 0; i < numSectors; i++, flashSegmentAddrP += 0x200) {
+    for (i = 0; i < numSectors; i++, flashSegmentAddrP += 0x200) 
+	{
         // Double check that the address falls below the bootloader flash area
-        if (flashSegmentAddrP < bootFlashStartAddrP) {
+        if (flashSegmentAddrP < bootFlashStartAddrP) 
+		{
             // Tickle the watchdog before erasing
             WATCHDOG_TICKLE();
             msp430Flash_erase_segment(flashSegmentAddrP);
@@ -275,7 +301,8 @@ static void msp430Flash_eraseAppImage(void) {
 * \brief Copy the backup image in flash to the main image 
 *        location in flash.
 */
-static void msp420Flash_copyBackupToApp(void) {
+static void msp420Flash_copyBackupToApp(void) 
+{
     uint8_t i;
     // Get number of sectors in the backup flash
     uint16_t numSectors = getNumSectorsInImage();
@@ -284,9 +311,11 @@ static void msp420Flash_copyBackupToApp(void) {
     uint8_t *flashDstAddrP = (uint8_t *)getAppImageStartAddr();
     uint8_t *checkAddrP = (uint8_t *)getBootImageStartAddr();
     // Copy the flash segments
-    for (i = 0; i < numSectors; i++, flashDstAddrP += 0x200, flashSrcAddrP += 0x200) {
+    for (i = 0; i < numSectors; i++, flashDstAddrP += 0x200, flashSrcAddrP += 0x200) 
+	{
         // Double check that we won't write over the bootloader
-        if ((flashDstAddrP + 0x1FF) < checkAddrP) {
+        if ((flashDstAddrP + 0x1FF) < checkAddrP) 
+		{
             // Tickle the watchdog before writing to flash
             WATCHDOG_TICKLE();
             msp430Flash_write_bytes(flashDstAddrP, flashSrcAddrP, 0x200);
@@ -301,14 +330,16 @@ static void msp420Flash_copyBackupToApp(void) {
 * @return bool Returns true if the backup image equals the main 
 *         image.
 */
-static bool msp430Flash_doesAppMatchBackup(void) {
+static bool msp430Flash_doesAppMatchBackup(void) 
+{
     volatile int result = 0;
     uint8_t i;
     uint16_t numSectors = getNumSectorsInImage();
     uint8_t *flashSrcAddrP = (uint8_t *)getBackupImageStartAddr();
     uint8_t *flashDstAddrP = (uint8_t *)getAppImageStartAddr();
     // Compare the flash segments
-    for (i = 0; i < numSectors; i++, flashDstAddrP += 0x200, flashSrcAddrP += 0x200) {
+    for (i = 0; i < numSectors; i++, flashDstAddrP += 0x200, flashSrcAddrP += 0x200) 
+	{
         // Tickle the watchdog before comparing flash segment.
         WATCHDOG_TICKLE();
         result += memcmp(flashDstAddrP, flashSrcAddrP, 0x200);
@@ -323,7 +354,8 @@ static bool msp430Flash_doesAppMatchBackup(void) {
 *******************************************************************************/
 #if 0
 extern uint8_t isrCommBuf[48];
-void msp430flash_test(void) {
+void msp430flash_test(void)
+{
     uint16_t i = 0;
     uint16_t j = 0;
     uint16_t val;
@@ -339,22 +371,27 @@ void msp430flash_test(void) {
     P1OUT &= ~BIT4;
 #endif
 
-    while (1) {
+    while (1)
+    {
 
         baseAddr = ((uint8_t *)0xC000);
         msp430Flash_erase_segment(baseAddr);
         // VERIFY ALL FF's
         addr16P = (uint16_t *)baseAddr;
-        for (j = 0; j < 256; j++, addr16P++) {
+        for (j = 0; j < 256; j++, addr16P++)
+        {
             val = *addr16P;
-            if (val != ((uint16_t)0xFFFF)) {
+            if (val != ((uint16_t)0xFFFF))
+            {
                 while (1);
             }
         }
         // WRITE
         addrP = baseAddr;
-        for (j = 0; j < 512; j += 32, addrP += 32) {
-            for (i = 0; i < 32; i += 2) {
+        for (j = 0; j < 512; j += 32, addrP += 32)
+        {
+            for (i = 0; i < 32; i += 2)
+            {
                 val = ((uint16_t)addrP) + i;
                 bufP[i] = val & 0xFF;
                 bufP[i+1] = val >> 8;
@@ -366,16 +403,20 @@ void msp430flash_test(void) {
         msp430Flash_erase_segment(baseAddr);
         // VERIFY ALL FF's
         addr16P = (uint16_t *)baseAddr;
-        for (j = 0; j < 256; j++, addr16P++) {
+        for (j = 0; j < 256; j++, addr16P++)
+        {
             val = *addr16P;
-            if (val != ((uint16_t)0xFFFF)) {
+            if (val != ((uint16_t)0xFFFF))
+            {
                 while (1);
             }
         }
         // WRITE
         addrP = baseAddr;
-        for (j = 0; j < 512; j += 32, addrP += 32) {
-            for (i = 0; i < 32; i += 2) {
+        for (j = 0; j < 512; j += 32, addrP += 32)
+        {
+            for (i = 0; i < 32; i += 2)
+            {
                 val = ((uint16_t)addrP) + i;
                 bufP[i] = val & 0xFF;
                 bufP[i+1] = val >> 8;
@@ -387,16 +428,20 @@ void msp430flash_test(void) {
         msp430Flash_erase_segment(baseAddr);
         // VERIFY ALL FF's
         addr16P = (uint16_t *)baseAddr;
-        for (j = 0; j < 256; j++, addr16P++) {
+        for (j = 0; j < 256; j++, addr16P++)
+        {
             val = *addr16P;
-            if (val != ((uint16_t)0xFFFF)) {
+            if (val != ((uint16_t)0xFFFF))
+            {
                 while (1);
             }
         }
         // WRITE
         addrP = baseAddr;
-        for (j = 0; j < 512; j += 32, addrP += 32) {
-            for (i = 0; i < 32; i += 2) {
+        for (j = 0; j < 512; j += 32, addrP += 32)
+        {
+            for (i = 0; i < 32; i += 2)
+            {
                 val = ((uint16_t)addrP) + i;
                 bufP[i] = val & 0xFF;
                 bufP[i+1] = val >> 8;
@@ -407,16 +452,20 @@ void msp430flash_test(void) {
         msp430Flash_erase_segment(baseAddr);
         // VERIFY ALL FF's
         addr16P = (uint16_t *)baseAddr;
-        for (j = 0; j < 256; j++, addr16P++) {
+        for (j = 0; j < 256; j++, addr16P++)
+        {
             val = *addr16P;
-            if (val != ((uint16_t)0xFFFF)) {
+            if (val != ((uint16_t)0xFFFF))
+            {
                 while (1);
             }
         }
         // WRITE
         addrP = baseAddr;
-        for (j = 0; j < 512; j += 32, addrP += 32) {
-            for (i = 0; i < 32; i += 2) {
+        for (j = 0; j < 512; j += 32, addrP += 32)
+        {
+            for (i = 0; i < 32; i += 2)
+            {
                 val = ((uint16_t)addrP) + i;
                 bufP[i] = val & 0xFF;
                 bufP[i+1] = val >> 8;
@@ -427,9 +476,11 @@ void msp430flash_test(void) {
         // VERIFY ALL
         baseAddr = ((uint8_t *)0xC000);
         uint16_t *addr16P = (uint16_t *)baseAddr;
-        for (j = 0; j < 1024; j++, addr16P++) {
+        for (j = 0; j < 1024; j++, addr16P++)
+        {
             val = *addr16P;
-            if (val != (((uint16_t)addr16P))) {
+            if (val != (((uint16_t)addr16P)))
+            {
                 while (1);
             }
         }

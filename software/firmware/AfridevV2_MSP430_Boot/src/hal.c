@@ -122,7 +122,7 @@ void hal_pinInit(void)
     P3DIR |= NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED;
     // Initialize P3 Outputs
     P3OUT &= ~(NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED);
-    P3OUT |= NTC_ENABLE;
+    P3OUT |= NTC_ENABLE + LED_GREEN + LED_RED;
 
     /***********/
     /* PORT P4 */

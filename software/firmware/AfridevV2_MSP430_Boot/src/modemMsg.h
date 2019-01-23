@@ -15,7 +15,7 @@
  */
 typedef enum messageType {
     MSG_TYPE_OTAREPLY = 0x03,
-    MSG_TYPE_SOS = 0x06,
+    MSG_TYPE_SOS = 0x23,
 } MessageType_t;
 
 /**

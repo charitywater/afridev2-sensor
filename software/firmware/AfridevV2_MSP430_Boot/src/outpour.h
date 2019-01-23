@@ -35,7 +35,7 @@
  * \def FW_VERSION_MINOR
  * \brief Specify the AfridevV2 firmware minor version number.
  */
-#define FW_VERSION_MINOR ((uint8_t)0x01)
+#define FW_VERSION_MINOR ((uint8_t)0x05)
 
 /*******************************************************************************
 * System Tick Access
@@ -154,10 +154,10 @@ typedef uint32_t sys_tick_t;
 
 #define MODEM_UART_SELECT_ENABLE() (P3OUT &= ~MSP_UART_SEL)
 #define GPS_UART_SELECT_ENABLE() (P3OUT |= MSP_UART_SEL)
-#define LED_GREEN_ENABLE() (P3OUT |= LED_GREEN)
-#define LED_GREEN_DISABLE() (P3OUT &= ~LED_GREEN)
-#define LED_RED_ENABLE() (P3OUT |= LED_RED)
-#define LED_RED_DISABLE() (P3OUT &= ~LED_RED)
+#define LED_GREEN_DISABLE() (P3OUT |= LED_GREEN)
+#define LED_GREEN_ENABLE() (P3OUT &= ~LED_GREEN)
+#define LED_RED_DISABLE() (P3OUT |= LED_RED)
+#define LED_RED_ENABLE() (P3OUT &= ~LED_RED)
 
 /*******************************************************************************
 *  Centralized method for enabling and disabling MSP430 interrupts
