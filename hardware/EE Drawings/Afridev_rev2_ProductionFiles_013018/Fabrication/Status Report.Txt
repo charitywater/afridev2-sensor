@@ -1,0 +1,10 @@
+Output: Test Point Report
+Type  : Test Points
+From  : PCB Document [AfriDev.PcbDoc]
+   Generated File[AfriDev_Rev2.0.ipc]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 6:18:10 PM On 1/30/2018

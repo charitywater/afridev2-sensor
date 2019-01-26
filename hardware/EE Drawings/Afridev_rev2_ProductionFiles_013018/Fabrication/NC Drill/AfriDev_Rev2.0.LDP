@@ -1,0 +1,3 @@
+Layer Pairs Export File for PCB: C:\SVN\IPS_EE\IPS_HARDWARE\trunk\Clients\Charity Water\AfriDev\Rev 2.0\CAD files\AfriDev.PcbDoc
+LayersSetName=Top_Bot_Plated_Thru_Holes|DrillFile=afridev_rev2.0-plated.txt|DrillLayers=gtl,g2,g3,gbl
+LayersSetName=Top_Bot_NonPlated_Thru_Holes|DrillFile=afridev_rev2.0-nonplated.txt|DrillLayers=gtl,g2,g3,gbl
