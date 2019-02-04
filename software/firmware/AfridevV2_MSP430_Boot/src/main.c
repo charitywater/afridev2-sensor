@@ -36,7 +36,7 @@
  *        reboot to occur MAX_ALLOWED_REBOOTS times before going
  *        into SOS mode.
  */
-#define MAX_ALLOWED_REBOOTS_WITH_NO_APPRECORD 4
+#define MAX_ALLOWED_REBOOTS_WITH_NO_APPRECORD 64
 
 /**
  * \typedef bootData_t 
@@ -50,6 +50,14 @@ typedef struct __attribute__((__packed__))mainData_s {
     bool newFwIsReady;                                     /**< Value of fwIsReady flag in the appRecord */
     uint16_t newFwCrc;                                     /**< Value of newFwCrc in the appRecord */
 } bootData_t;
+
+/**
+ * \def DEBUG_LED_USE
+ * \brief Defining this constant enables the use of the LEDs to signal
+ *        various failures detected in the boot loader.   To disable this
+ *        the following constant should be commented out
+ */
+#define DEBUG_LED_USE 1
 
 /***************************
  * Module Data Declarations
@@ -74,6 +82,11 @@ bootData_t bootData;
 static void sosMode(void);
 static void low_power_12_hour_delay(void);
 static void disableIndividualInterrupts(void);
+
+static void signalPassLED(uint8_t blinkCount);
+#ifdef DEBUG_LED_USE
+static void signalErrorLED(uint8_t blinkCount);
+#endif
 
 /***************************
  * Module Public Functions 
@@ -173,9 +186,18 @@ int main(void)
     {
         // Only increment the bootloader record if this is not a
         // power-on-reset (POR) or hard reset via the reset pin.
+
         if (!(bootData.rebootReason & (PORIFG | RSTIFG)))
         {
             bootRecord_incrementBootloaderRecordCount();
+#ifdef DEBUG_LED_USE
+            if (bootData.rebootReason & NMIIFG)
+        	   signalErrorLED(2);
+            else if (bootData.rebootReason & OFIFG)
+               signalErrorLED(3);
+            else if (bootData.rebootReason & WDTIFG)
+               signalErrorLED(4);
+#endif
         }
     }
 
@@ -197,6 +219,13 @@ int main(void)
             // Set flag to mark it's OK to jump to application
             jumpToApplication = true;
         }
+#ifdef DEBUG_LED_USE
+        else
+        {
+        	// signal FIRMWARE CRC failure, ignore the new firmware image
+        	signalErrorLED(5);
+        }
+#endif
     }
 
     if (!jumpToApplication)
@@ -232,6 +261,13 @@ int main(void)
                 // Set flag to mark it's OK to jump to application
                 jumpToApplication = true;
             }
+#ifdef DEBUG_LED_USE
+            else
+            {
+            	// signalAPP RECORD failure, go to SOS (reluctantly, but if it fails 64 times something is wrong)
+            	signalErrorLED(6);
+            }
+#endif
         }
     }
 
@@ -247,6 +283,9 @@ int main(void)
         // Verify that the location stored at the application reset vector falls into a legal range
         if ((*app_reset_vector >= app_flash_start) && (*app_reset_vector < app_vector_table))
         {
+        	// signal FIRMWARE CRC failure
+        	signalPassLED(3);
+
             // Erase the application record.
             // The app will re-write it once it starts.  This is how we know the
             // app started correctly the next time we boot.
@@ -260,12 +299,79 @@ int main(void)
             // Jump to app
             TI_MSPBoot_APPMGR_JUMPTOAPP();
         }
+#ifdef DEBUG_LED_USE
+        else
+        {
+        	// this is a BUILD defect, not an operational one, this should not happen at all in the field
+        	signalErrorLED(7);
+        }
+#endif
     }
 
+    // signal SOS (both lit)
+    LED_GREEN_ENABLE();
+    LED_RED_ENABLE();
     // If we made it here, then something is wrong.  Go into SOS mode.
     sosMode();
 
     return (0);
+}
+
+#ifdef DEBUG_LED_USE
+/**
+* \brief This is used to signal specific error conditions in the Boot Loader.
+*
+*/
+static void signalErrorLED(uint8_t blinkCount)
+{
+	uint8_t i,j;
+
+    WATCHDOG_TICKLE();
+	for(j=0; j<blinkCount; j++)
+	{
+		LED_GREEN_DISABLE();
+		LED_RED_ENABLE();
+
+		for (i=0; i< 200; i++)
+		   __delay_cycles(1000);
+
+		LED_RED_DISABLE();
+	    WATCHDOG_TICKLE();
+
+		for (i=0; i< 200; i++)
+		   __delay_cycles(1000);
+	}
+	for (i=0; i< 200; i++)
+	   __delay_cycles(1000);
+    WATCHDOG_TICKLE();
+}
+#endif
+/**
+* \brief This is used to signal specific good conditions in the Boot Loader. Such as successful Boot completion
+*
+*/
+static void signalPassLED(uint8_t blinkCount)
+{
+	uint8_t i,j;
+
+    WATCHDOG_TICKLE();
+	for(j=0; j<blinkCount; j++)
+	{
+		LED_GREEN_ENABLE();
+		LED_RED_DISABLE();
+
+		for (i=0; i< 200; i++)
+		   __delay_cycles(1000);
+
+		LED_GREEN_DISABLE();
+	    WATCHDOG_TICKLE();
+
+		for (i=0; i< 200; i++)
+		   __delay_cycles(1000);
+	}
+	for (i=0; i< 200; i++)
+	   __delay_cycles(1000);
+    WATCHDOG_TICKLE();
 }
 
 /**
@@ -374,7 +480,16 @@ static void sosMode(void)
         // fall into a 12 hour delay.
         if (sosFlag)
         {
+            // don't kill the battery waiting to resolve the SOS, it's more than likely sealed up in the housing anyways
+            // turn off the LEDs
+    		LED_GREEN_DISABLE();
+    		LED_RED_DISABLE();
+
             low_power_12_hour_delay();
+
+            // turn on the SOS LED indication when trying to send SOS message over modem, in case the Modem is locked up
+    		LED_GREEN_ENABLE();
+    		LED_RED_ENABLE();
         }
         else
         {

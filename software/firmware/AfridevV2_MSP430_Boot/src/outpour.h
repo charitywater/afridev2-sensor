@@ -35,7 +35,7 @@
  * \def FW_VERSION_MINOR
  * \brief Specify the AfridevV2 firmware minor version number.
  */
-#define FW_VERSION_MINOR ((uint8_t)0x05)
+#define FW_VERSION_MINOR ((uint8_t)0x06)
 
 /*******************************************************************************
 * System Tick Access
