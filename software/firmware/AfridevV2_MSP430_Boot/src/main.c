@@ -158,6 +158,12 @@ int main(void)
     // one second timeout.
     WATCHDOG_TICKLE();
 
+    // make a 25 msec delay (@16 MHz) before changing clock.  This is to be sure that the
+	// DCO settings are not made before the 2 mSec window of Td(BOR) identified in Figure 12 of
+	// TI's MIXED SIGNAL MICROCONTROLLER specification SLAS800 March 2013 p. 25
+	// the port pins are not yet initialized, so the Green LED is not lit for this delay
+    signalPassLED(1);
+
     // Perform Hardware initialization
     hal_sysClockInit();
     hal_pinInit();
