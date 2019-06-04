@@ -60,6 +60,7 @@ void waterSense_init(void)
     // set system default tuned value
     sysExecData.downspout_rate = TUNED_DOWNSPOUT_RATE;
     padStats.water_limit = WATER_STUCK_LIMIT;
+    padStats.unknown_limit = UNKNOWN_LIMIT;
 }
 
 /**
