@@ -25,6 +25,8 @@ namespace cwtest
             textBoxSatellite.Text = "4";
             textBoxHDOP.Text = "30";
             textBoxMeasTime.Text = "60";
+            textBoxUnkLimit.Text = "90";
+            textBoxWaterLimit.Text = "900";
             listViewDWL_LPH.View = View.Details;
             listViewDWL_LPH.GridLines = true;
             listViewDWL_LPH.FullRowSelect = true;
@@ -182,6 +184,7 @@ namespace cwtest
                 case 0x08: answer = "GPS Location"; break;
                 case 0x21: answer = "Daily Water Log"; break;
                 case 0x22: answer = "Sensor Data"; break;
+                case 0x23: answer = "SOS (Boot Message)"; break;
             }
             return (answer);
         }
@@ -279,7 +282,7 @@ namespace cwtest
                 int goodapp = int.Parse(goodapps, System.Globalization.NumberStyles.HexNumber);
                 checkBoxSOS_Good_APP.Checked = goodapp != 0 ? true : false;
                 string bwfs = textBoxFA_Message.Text.Substring(36, 4);
-                int bwf = int.Parse(bwfs, System.Globalization.NumberStyles.HexNumber);
+                int bwf = int.Parse(big_endian(bwfs), System.Globalization.NumberStyles.HexNumber);
                 textBoxSOS_FBC.Text = Convert.ToString(bwf);
                 string fwcrs = textBoxFA_Message.Text.Substring(40, 2);
                 int fwcr = int.Parse(fwcrs, System.Globalization.NumberStyles.HexNumber);
@@ -288,7 +291,7 @@ namespace cwtest
                 int fwir = int.Parse(fwirs, System.Globalization.NumberStyles.HexNumber);
                 checkBoxSOS_FWIR.Checked = fwir != 0 ? true : false;
                 string crcs = textBoxFA_Message.Text.Substring(44, 4);
-                textBoxSOS_CRC.Text = crcs;
+                textBoxSOS_CRC.Text = big_endian(crcs);
             }
             else
             {
@@ -878,6 +881,7 @@ namespace cwtest
                         parse_ota_reply_message();
                         break;
                     case 6: //sos message
+                    case 35:
                         parse_sos_message();
                         break;
                     case 7: // activated
@@ -1049,6 +1053,25 @@ namespace cwtest
         private void groupBox13_Enter(object sender, EventArgs e)
         {
 
+        }
+
+        private void comboBoxSensorReq_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            int UnkLmit = int.Parse(textBoxUnkLimit.Text);
+            int WtrLmit = int.Parse(textBoxWaterLimit.Text);
+
+            switch(comboBoxSensorReq.SelectedIndex)
+            {
+                case 0: textBoxSensorData.Text = space_bytes("0F5AA5000000"); break;
+                case 1: textBoxSensorData.Text = space_bytes("0F5AA5010000"); break;
+                case 2: textBoxSensorData.Text = space_bytes("0F5AA5020000"); break;
+                case 3: textBoxSensorData.Text = space_bytes("0F5AA503"+ big_endian(UnkLmit.ToString("X4"))); break;
+                case 4: textBoxSensorData.Text = space_bytes("0F5AA5040000"); break;
+                case 5: textBoxSensorData.Text = space_bytes("0F5AA5050000"); break;
+                case 6: textBoxSensorData.Text = space_bytes("0F5AA506" + big_endian(WtrLmit.ToString("X4"))); break;
+                default: break;
+            }
         }
     }
 }
