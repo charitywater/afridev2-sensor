@@ -77,6 +77,7 @@ static volatile uint32_t seconds_since_boot;
 *        occurred.
 */
 static volatile uint8_t ticks_per_second;
+static volatile uint8_t seconds_per_sleep;
 
 /**
 * \brief Initialize and start timerA0 for the one second system 
@@ -96,8 +97,55 @@ void timerA0_init(void)
 
     ticks_per_second = 0;
     seconds_since_boot = 0;
+    seconds_per_sleep = 0;
 }
 
+/**
+* \brief Set the timer interrupt frequency for low frequency samples
+* \ingroup PUBLIC_API
+*/
+void timerA0_20sec_sleep(void)
+{
+	__disable_interrupt();
+    UC0IE &= ~UCA0TXIE;       // Disable USCI_A0 TX interrupt
+    BCSCTL1 |= DIVA_3;                                     // ACLK/8 [ACLK/(0:1,1:2,2:4,3:8)]
+    BCSCTL2 = 0;                                           // SMCLK [SMCLK/(0:1,1:2,2:4,3:8)]
+    BCSCTL3 |= LFXT1S_0; // | XCAP_2;                          // LFXT1S0 32768-Hz crystal on LFXT1
+
+    TA0CCR0 = 10240-1; // 32786Hz/8/8/10240=512HZ/10240= 1/20HZ
+    TA0CTL = TASSEL_1 + ID_3 + MC_1 + TACLR;
+    TA0CCTL0 &= ~CCIFG;
+    TA0CCTL0 |= CCIE;
+    ticks_per_second = 0;
+    seconds_per_sleep = 20;
+
+    __enable_interrupt();
+}
+
+/**
+* \brief Set the timer interrupt frequency for taking samples
+* \ingroup PUBLIC_API
+*/
+void timerA0_inter_sample_sleep(void)
+{
+	__disable_interrupt();
+    UC0IE |= UCA0TXIE;       // Re-Enable USCI_A0 TX interrupt
+
+    BCSCTL1 &= ~DIVA_3;
+    BCSCTL1 |= DIVA_0;                                     // ACLK/1 [ACLK/(0:1,1:2,2:4,3:8)]
+    BCSCTL2 = 0;                                           // SMCLK [SMCLK/(0:1,1:2,2:4,3:8)]
+    BCSCTL3 |= LFXT1S_0; // | XCAP_2;                          // LFXT1S0 32768-Hz crystal on LFXT1
+
+	TA0CCR0 = 16384-1; // 32786Hz/16384=2HZ
+
+    TA0CTL = TASSEL_1 + ID_0 + MC_1 + TACLR;
+    TA0CCTL0 &= ~CCIFG;
+    TA0CCTL0 |= CCIE;
+    ticks_per_second = 0;
+    seconds_per_sleep = 0;
+
+    __enable_interrupt();
+}
 /**
 * \brief Retrieve the seconds since boot system value.
 * \ingroup PUBLIC_API
@@ -130,15 +178,23 @@ __interrupt void ISR_Timer0_A0(void)
     // Increment on every interrupt
     ++ticks_per_second;
 
-    // Check if we have reached one second
-    if (ticks_per_second >= TIMER_INTERRUPTS_PER_SECOND)
+    if (!seconds_per_sleep)
     {
-        // Increment the TI calendar library
-        incrementSeconds();
+        // Check if we have reached one second
+        if (ticks_per_second >= TIMER_INTERRUPTS_PER_SECOND)
+        {
+            // Increment the TI calendar library
+            incrementSeconds();
+            // Increment the seconds counter
+            seconds_since_boot += 1;
+            // Zero
+            ticks_per_second = 0;
+        }
+    }
+    else
+    {
         // Increment the seconds counter
-        seconds_since_boot++;
-        // Zero
-        ticks_per_second = 0;
+        seconds_since_boot += seconds_per_sleep;
     }
 
     // DDL Notes - Clear the low power mode bits on exit so that the MSP430 will come out of sleep

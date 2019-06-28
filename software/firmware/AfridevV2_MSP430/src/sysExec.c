@@ -87,7 +87,7 @@ static void sendStartUpMsg2(void);
 static void sendSensorDataMsg(void);
 static void sysExec_doReboot(void);
 #endif
-
+uint8_t lowPowerMode_check(void);
 #ifdef SEND_DEBUG_INFO_TO_UART
 static void sysExec_sendDebugDataToUart(void);
 #endif
@@ -95,6 +95,44 @@ static void sysExec_sendDebugDataToUart(void);
 /***************************
  * Module Public Functions
  **************************/
+
+uint16_t processWaterAnalysis(void)
+{
+    uint16_t currentFlowRateInMLPerSec = 0;
+
+    // Don't perform water data analysis if modem is in use.
+    #ifndef WATER_DEBUG
+    if (!modemMgr_isAllocated() && !gps_isActive())
+    {
+    #else
+    if (!gps_isActive())
+    {
+    #endif
+        currentFlowRateInMLPerSec = analyzeWaterMeasurementData();
+
+        // make sure there is no water on the pads when saving the baseline
+        if (sysExecData.saveCapSensorBaselineData && currentFlowRateInMLPerSec == 0)
+        {
+    #ifdef WATER_DEBUG
+            bool air_targets_set;
+
+            // the baseline cap data was recorded at a certain temperature.  Upon system reset
+            // this data needs to be loaded as the default air target but temperature adjusted
+            air_targets_set = manufRecord_setBaselineAirTargets();
+
+            if (!air_targets_set)
+            {
+                debug_message("***AIR Targets Not SET***");
+                __delay_cycles(1000);
+            }
+    #else
+            manufRecord_setBaselineAirTargets();
+    #endif
+            sysExecData.saveCapSensorBaselineData = 0;
+        }
+    }
+    return (currentFlowRateInMLPerSec);
+}
 
 /**
 * \brief This function contains the main software loop
@@ -116,6 +154,7 @@ void sysExec_exec(void)
 
     uint8_t exec_main_loop_counter = 0;
     uint8_t temperature_loop_counter = 0;
+    uint16_t currentFlowRateInMLPerSec = 0;
 
     // Restart the one-second watchdog timeout
     WATCHDOG_TICKLE();
@@ -124,6 +163,7 @@ void sysExec_exec(void)
 
     // Set how long to wait until first startup message should be transmitted
     sysExecData.secondsTillStartUpMsgTx = START_UP_MSG_TX_DELAY_IN_SECONDS;
+    sysExecData.dry_wake_time = SYSEXEC_NO_WATER_SLEEP_DELAY;
 
     // Initialize the date for Jan 1, 2018
     // h, m, s, am/pm (must be in BCD)
@@ -167,8 +207,9 @@ void sysExec_exec(void)
 
     // the following line makes it possible to load new firmware without waiting 24 hours
     // just pump water (or take the well apart to reload)
-    //sysExecData.sendSensorDataNow = 1;  /// TODO Debug Only.... Remove!!!!
-
+#ifdef DEBUG_SEND_SENSOR_DATA_NOW
+    sysExecData.sendSensorDataNow = 1;  
+#endif
     // Start the infinite exec main loop
     while (1)
     {
@@ -176,7 +217,8 @@ void sysExec_exec(void)
         // Go into low power mode.
         // Wake on the exit of the TimerA0 interrupt.
         // Wakes every .5 seconds to run the main loop
-        __bis_SR_register(LPM3_bits);
+        if (!sysExecData.time_elapsed)
+           __bis_SR_register(LPM3_bits);
 
         // Restart the one-second watchdog timeout
         WATCHDOG_TICKLE();
@@ -188,16 +230,17 @@ void sysExec_exec(void)
         // mode, the counter is used to control how often the water measurements are
         // performed. In LF water measurement mode, we want to take a batch of
         // measurements periodically.
-        if (sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT)
+        // water measurements are done only when the sleep mode is not active
+        if (sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT && !sysExecData.time_elapsed)
         {
 #ifndef WATER_DEBUG
             if (!modemMgr_isAllocated() && !gps_isActive())
 #else
             if (!gps_isActive())
 #endif
-                {
-                    waterSense_takeReading();
-                }
+            {
+                waterSense_takeReading();
+            }
         }
 
         // Increment main loop counter
@@ -205,11 +248,9 @@ void sysExec_exec(void)
 
         // Perform system tasks every SECONDS_PER_TREND (i.e. every 2 seconds)
         // which is every fourth time that the exec main loop runs.
-        if (exec_main_loop_counter >= TICKS_PER_TREND)
+        // time elapsed is set when the unit slept for 20 seconds
+        if (exec_main_loop_counter >= TICKS_PER_TREND || sysExecData.time_elapsed)
         {
-
-            uint16_t currentFlowRateInMLPerSec = 0;
-
             // zero the main loop counter
             exec_main_loop_counter = 0;
             temperature_loop_counter++;
@@ -221,38 +262,13 @@ void sysExec_exec(void)
                 waterSenseReadInternalTemp();
             }
 
-            // Don't perform water data analysis if modem is in use.
-#ifndef WATER_DEBUG
-            if (!modemMgr_isAllocated() && !gps_isActive())
-            {
-#else
-            if (!gps_isActive())
-            {
-#endif
-                currentFlowRateInMLPerSec = analyzeWaterMeasurementData();
-                // make sure there is no water on the pads when saving the baseline
-                if (sysExecData.saveCapSensorBaselineData && currentFlowRateInMLPerSec == 0)
-                {
-#ifdef WATER_DEBUG
-                    bool air_targets_set;
-
-                    // the baseline cap data was recorded at a certain temperature.  Upon system reset
-                    // this data needs to be loaded as the default air target but temperature adjusted
-                    air_targets_set = manufRecord_setBaselineAirTargets();
-
-                    if (!air_targets_set)
-                    {
-                        debug_message("***AIR Targets Not SET***");
-                        __delay_cycles(1000);
-                    }
-#else
-                    manufRecord_setBaselineAirTargets();
-#endif
-                    sysExecData.saveCapSensorBaselineData = 0;
-                }
-            }
+            // only do water measurements when not sleeping
+            if (!sysExecData.time_elapsed)
+                currentFlowRateInMLPerSec =  processWaterAnalysis();
+            else
+                currentFlowRateInMLPerSec = 0;
             // Record the water stats and initiate periodic communication
-            storageMgr_exec(currentFlowRateInMLPerSec);
+            storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.time_elapsed);
 #ifndef WATER_DEBUG
             // Perform communication support - these run the state machines
             // that perform the software modem interaction.  They do not
@@ -345,8 +361,10 @@ void sysExec_exec(void)
                 sysExec_sendDebugDataToUart();
             }
 #endif
-        }
-    }
+        } // every 4 clock ticks
+
+        sysExecData.time_elapsed = lowPowerMode_check();  //every clock tick
+    } // end while 1
 }
 
 /***************************
@@ -657,6 +675,90 @@ static void sendStartUpMsg2(void)
 }
 
 /**
+* \brief This function will check if the pump has been idle long enough to put the unit to sleep for 20 seconds
+*        For debugging the leds are being flashed to show when water is detected (green)and when the unit is sleeping (red)
+*/
+uint8_t lowPowerMode_check(void)
+{
+    static volatile int blink_red = 0;
+    uint8_t time_elapsed  = 0;
+
+    if (sysExecData.dry_wake_time > 0)
+    {
+
+        // do not go to sleep if the modem is busy with updates or send test. or the gps is measuring
+         if (sysExecData.send_test_result != SYSEXEC_SEND_TEST_RUNNING && !gps_isActive() && !modemMgr_isAllocated())
+         {
+                if (waterSense_waterPresent())
+                {
+                   sysExecData.dry_count = 0;
+#ifdef SLEEP_DEBUG
+                   hal_led_none();
+                   hal_led_green();    // debug only -- green LED to indicate water present
+                   sysExecData.led_on_time = 0;  // prevent the manufRecord_update_LEDs() from clearing the toggle
+#endif
+                }
+                else
+                {
+                   // capsense interrupts would wake this instantly wait until the sensing is done 
+                   if (sysExecData.dry_count++ > sysExecData.dry_wake_time && !CAPSENSE_ACTIVE)
+                   {
+#ifdef SLEEP_DEBUG
+                       //hal_led_red();  // for debug only - red LED to indicate sleep
+                       //sysExecData.led_on_time = 0;  // prevent the manufRecord_update_LEDs() from clearing the toggle
+#endif
+#ifdef WATER_DEBUG
+                       debug_message("*SLEEP*");
+                       WATCHDOG_TICKLE();
+                       // do the 20 second sleep!  First clear out pending debug messages
+                       while(!dbg_uart_txqempty());  // send the rest of the debug data
+                       while(dbg_uart_txpend());     // wait for the last character to be consumed
+                       _delay_cycles(2000);          // wait one character time afterwards so the terminal is not confused
+#endif
+                       WATCHDOG_STOP();
+
+                       timerA0_20sec_sleep();
+                       hal_low_power_enter();
+                       timerA0_inter_sample_sleep();
+
+                       for (time_elapsed = 0; time_elapsed < 20; time_elapsed++)
+                          incrementSeconds();
+                       WATCHDOG_TICKLE();
+#ifdef WATER_DEBUG
+                       uint32_t sys_time = getSecondsSinceBoot();
+                       debug_logSummary('W', sys_time, 0, 0, 0);
+#endif
+                   }
+                   else
+                       hal_led_none();
+                }
+         }
+#ifdef SLEEP_DEBUG
+         else
+         {
+            if (sysExecData.send_test_result != SYSEXEC_SEND_TEST_RUNNING && (gps_isActive() || modemMgr_isAllocated()))
+            {
+                hal_led_none();  //turn off green led
+                // flash red when modem is busy
+                if (!blink_red)
+                {
+                   hal_led_blink_red();
+                   blink_red = 10;
+                }
+                else
+                   --blink_red;
+                sysExecData.led_on_time = 5;  // cause the manufRecord_update_LEDs() to clear the red led after modem stops
+            }
+         }
+#endif
+    }
+
+    // tell the caller if 0 or 20 additional seconds passed by
+    return (time_elapsed);
+}
+
+
+/**
 * \brief Initiate sending the Sensor Data Message
 */
 #ifndef WATER_DEBUG
@@ -727,6 +829,7 @@ static void sysExec_doReboot(void)
         sysExecData.rebootCountdownIsActive = 0;
     }
 }
+
 
 #ifdef SEND_DEBUG_INFO_TO_UART
 /**

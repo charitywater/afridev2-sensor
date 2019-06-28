@@ -1446,6 +1446,7 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
     // request 3 only needs a byte, but the word is there in case
     // we add another request
     uint16_t requestData = otaRespP->buf[5];
+    bool error = false;
 
     requestData = (requestData << 8) + otaRespP->buf[4];
 
@@ -1462,14 +1463,14 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
     {
         //"reject command" when out of spec
         if (requestData > 100)
-            *statusP = 0xFF;
+            error = true;
     }
 
     // Prepare OTA response.  It will be sent after this function exits.
     prepareOtaResponse(otaRespP->buf[0], otaRespP->buf[1], otaRespP->buf[2], NULL, 0);
-
     // Set status to success for now
     *statusP = 1;
+
     *responseDataP++ = requestType;                        // echo request type
     *responseDataP++ = (uint8_t)(requestData & 0xFF);
     *responseDataP++ = (uint8_t)(requestData >> 8);        // echo request data
@@ -1504,10 +1505,18 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
             // set the water limit
             padStats.water_limit = requestData;
             break;
+        case SENSOR_SET_WAKE_TIME:
+            // set time that unit has no water before sleeping
+            sysExecData.dry_wake_time = requestData;
+            break;
         default:
             // Invalid request type
-            *statusP = 0xFF;                               // failure status
+            error = true;
     }
+
+    if (error)
+        *statusP = 0xFF;                                   // failure status
+
     return (true);
 }
 

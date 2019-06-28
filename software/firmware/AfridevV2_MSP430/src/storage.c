@@ -300,7 +300,7 @@ void storageMgr_init(void)
     storageMgr_resetWeeklyLogs();
 
     // Set default transmission rate
-    stData.transmissionRateInDays = 7;
+    stData.transmissionRateInDays = STORAGE_TRANSMISSION_RATE_DEFAULT;
 }
 
 /**
@@ -308,8 +308,14 @@ void storageMgr_init(void)
 *        the main processing loop.
 * \ingroup EXEC_ROUTINE
 */
-void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
+void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 {
+    uint8_t time_change;
+
+    if (time_elapsed)
+       time_change = time_elapsed;
+    else
+       time_change = SECONDS_PER_TREND;
 
     // If we are waiting for an alignment event to occur, see if there
     // is a match (GMT time == alignment time).
@@ -318,7 +324,7 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
         // Decrement our safety down counter.
         // We use a safety down-counter to make sure that we don't wait more
         // than 24 hours for the alignment event to occur.
-        stData.alignSafetyCheckInSec -= SECONDS_PER_TREND;
+        stData.alignSafetyCheckInSec -= time_change;
         if (doesAlignTimeMatch() || (stData.alignSafetyCheckInSec < 0))
         {
             // If the current time is equal to the storage offset,
@@ -333,6 +339,9 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
             }
         }
         // Don't start storing any data until we are officially aligned.
+#ifdef WATER_DEBUG
+        debug_message("*ALIGN*");
+#endif
         return;
     }
 
@@ -342,7 +351,9 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
     // Increment the unit of time, record the amount of water, reset the previous unit of time
 
     // Note: this function is called every two seconds by the main loop.
-    stData.storageTime_seconds += SECONDS_PER_TREND;
+    // unless we were in sleep mode
+    stData.storageTime_seconds += time_change;
+
 
     if (stData.storageTime_seconds >= TOTAL_SECONDS_IN_A_MINUTE)
     {
@@ -350,7 +361,7 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
         recordLastMinute();
         // Update time
         stData.storageTime_minutes++;
-        stData.storageTime_seconds = 0;
+        stData.storageTime_seconds -= TOTAL_SECONDS_IN_A_MINUTE;
     }
     if (stData.storageTime_minutes >= TOTAL_MINUTES_IN_A_HOUR)
     {
@@ -358,7 +369,7 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
         recordLastHour();
         // Update time
         stData.storageTime_hours++;
-        stData.storageTime_minutes = 0;
+        stData.storageTime_minutes -= TOTAL_MINUTES_IN_A_HOUR;
     }
     if (stData.storageTime_hours >= TOTAL_HOURS_IN_A_DAY)
     {
@@ -373,7 +384,7 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec)
         recordLastDay();
         // Update Time
         stData.storageTime_dayOfWeek++;
-        stData.storageTime_hours = 0;
+        stData.storageTime_hours -= TOTAL_HOURS_IN_A_DAY;
 
         // Prepare data storage for next day
         if (stData.storageTime_dayOfWeek < TOTAL_DAYS_IN_A_WEEK)
@@ -1187,22 +1198,41 @@ static bool redFlagProcessing(int16_t dayLiterSum)
 *        the current GMT time for seconds, minutes and hours.
 * \note We currently don't match seconds, as it should not be 
 *       needed and adds risk to missing the align time window.
+*       We need to add some leeway with minute matching because of
+*       the 20 sleep mode and the possible lag of the clock over a day
 * 
 * @return bool Returns true if a match occurred.
 */
 static bool doesAlignTimeMatch(void)
 {
     timePacket_t NowTime;
+    uint8_t hour_diff;
+    uint8_t minute_diff;
 
     getBinTime(&NowTime);
-    if ((NowTime.minute == stData.alignMinute) && (NowTime.hour24 == stData.alignHour24))
+
+    // we need to know how many minutes are between the align point and NOW
+    // this might wrap around midnight so it is tricky
+    if (NowTime.hour24 != stData.alignHour24)
     {
-        return (true);
+       if (NowTime.hour24 > stData.alignHour24)
+          hour_diff = 24 - NowTime.hour24 + stData.alignHour24;
+       else
+          hour_diff = stData.alignHour24 - NowTime.hour24;
+       hour_diff--;
     }
     else
-    {
-        return (false);
-    }
+       hour_diff = 0;
+
+    if (!hour_diff && NowTime.minute > stData.alignMinute)
+       minute_diff = 60 - NowTime.minute + stData.alignMinute;
+    else
+       minute_diff = stData.alignMinute - NowTime.minute;
+
+    // if the NOW time is within 5 minutes of the align time it's good
+    // the range is so the system will still work even if the time jumps due to
+    // 20 second sleep cycles
+    return (minute_diff < 5);
 }
 
 /**

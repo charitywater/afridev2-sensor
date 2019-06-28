@@ -35,8 +35,14 @@
  */
 #ifdef WATER_DEBUG
 //#define WATERDETECT_READ_WATER_LEVEL_NORMAL
+//#define NO_GPS_TEST 1
+#define SLEEP_DEBUG 1
 #else
 #define WATERDETECT_READ_WATER_LEVEL_NORMAL
+//#define SLEEP_DEBUG 1
+//#define DEBUG_BATTERY_TEST 1
+//#define DEBUG_SEND_SENSOR_DATA_NOW 1
+//#define DEBUG_DAILY_WATER_REPORTS 1
 //#define RED_FLAG_TEST
 #endif
 /**
@@ -86,14 +92,14 @@
  * \def FW_VERSION_MAJOR
  * \brief Specify the AfridevV2 firmware major version number.
  */
-#define FW_VERSION_MAJOR ((uint8_t)0x02)
+#define FW_VERSION_MAJOR ((uint8_t)0x03)
 
 /**
  * \def FW_VERSION_MINOR
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x08
+#define FW_MINOR 0x00
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -256,6 +262,8 @@ typedef enum padId_e {
 #define LED_GREEN_ENABLE() (P3OUT &= ~LED_GREEN)
 #define LED_RED_DISABLE() (P3OUT |= LED_RED)
 #define LED_RED_ENABLE() (P3OUT &= ~LED_RED)
+#define ADC_ENABLE() (P3OUT |= NTC_ENABLE)
+#define ADC_DISABLE() (P3OUT &= ~NTC_ENABLE)
 
 /*******************************************************************************
 *  Centralized method for enabling and disabling MSP430 interrupts
@@ -340,6 +348,8 @@ typedef enum
 typedef struct sysExecData_s {
     uint32_t total_flow;                                   /**< Number of milliliters of water poured in current session */
     uint16_t downspout_rate;                               /**< Maximum downspout rate setting for tuning accuracy based on board thickness */
+    uint16_t dry_count;                                    /**< Current number of consecutive trends with no water */
+    uint16_t dry_wake_time;                                /**< Number of consecutive trends with no water before sleeping */
     bool FAMsgWasSent : 1;                                 /**< Flag specifying if Final Assembly msg was sent */
     bool mCheckInMsgWasSent : 1;                           /**< Flag specifying if Monthly Check In msg was sent */
     bool appRecordWasSet: 1;                               /**< Flag specifying if App record was set */
@@ -357,6 +367,7 @@ typedef struct sysExecData_s {
     uint8_t rebootCountdownIsActive;                       /**< Specify if a reboot countdown sequence is in-progress */
     uint8_t noWaterMeasCount;                              /**< Maintain a count of sequential no water detected measurements */
     uint8_t waterMeasDelayCount;                           /**< Delay next water measurement count-down */
+    uint8_t time_elapsed;                                  /**< Time that the unit slept during low power mode check */
     MANUF_STATE_T mtest_state;                             /**< Manufacturing test State */
 } sysExecData_t;
 
@@ -377,7 +388,25 @@ void sysExec_exec(void);
 bool sysExec_startRebootCountdown(uint8_t activateReboot);
 void sysError(void);
 
+// half second accuracy! 60 = 30 seconds; 3600 = 30 minutes
+#ifdef WATER_DEBUG
+#define SYSEXEC_NO_WATER_SLEEP_DELAY 60
+#else
+#ifndef DEBUG_BATTERY_TEST
+#define SYSEXEC_NO_WATER_SLEEP_DELAY 3600
+#else
+#define SYSEXEC_NO_WATER_SLEEP_DELAY 60
+#endif
+#endif
+
 extern sysExecData_t sysExecData;
+
+
+/*******************************************************************************
+*  time.c
+*******************************************************************************/
+void timerA0_inter_sample_sleep(void);
+void timerA0_20sec_sleep(void);
 
 /*******************************************************************************
 * Utils.c
@@ -577,6 +606,7 @@ bool modemPower_isModemOnError(void);
 
 // wait up to 5 minutes for a SEND_TEST "Success"
 #define SEND_TEST_RETRIES 150
+#define SYSEXEC_SEND_TEST_IDLE 0
 #define SYSEXEC_SEND_TEST_RUNNING 1
 #define SYSEXEC_SEND_TEST_PASS 2
 #define SYSEXEC_SEND_TEST_FAIL 0xFF
@@ -710,6 +740,7 @@ bool otaMsgMgr_isOtaProcessingDone(void);
 #define SENSOR_REPORT_NOW 4
 #define SENSOR_DOWNSPOUT_RATE 5
 #define SENSOR_SET_WATER_LIMIT 6
+#define SENSOR_SET_WAKE_TIME 7
 
 /*******************************************************************************
 * msgOtaUpgrade.c
@@ -901,7 +932,7 @@ uint16_t manufRecord_getSensorDataMessage(uint8_t **payloadPP);
 * storage.c
 *******************************************************************************/
 void storageMgr_init(void);
-void storageMgr_exec(uint16_t currentFlowRateInSecML);
+void storageMgr_exec(uint16_t currentFlowRateInSecML, uint8_t time_elapsed);
 void storageMgr_overrideUnitActivation(bool flag);
 uint16_t storageMgr_getDaysActivated(void);
 void storageMgr_resetRedFlag(void);
@@ -918,6 +949,12 @@ uint8_t storageMgr_getStorageClockMinute(void);
 uint8_t storageMgr_prepareMsgHeader(uint8_t *dataPtr, uint8_t payloadMsgId);
 uint16_t storageMgr_getMonthlyCheckinMessage(uint8_t **payloadPP);
 uint16_t storageMgr_getActivatedMessage(uint8_t **payloadPP);
+
+#ifdef DEBUG_DAILY_WATER_REPORTS
+#define STORAGE_TRANSMISSION_RATE_DEFAULT 1
+#else
+#define STORAGE_TRANSMISSION_RATE_DEFAULT 7
+#endif
 
 /*******************************************************************************
 * waterSense.c
@@ -937,15 +974,23 @@ void waterSense_writeConstants(uint8_t *dataP);
 void waterSense_sendDebugDataToUart(void);
 
 /*******************************************************************************
+* CTS_HAL.c
+*******************************************************************************/
+extern uint8_t CAPSENSE_ACTIVE;
+
+/*******************************************************************************
 * hal.c
 *******************************************************************************/
 void hal_sysClockInit(void);
 void hal_uartInit(void);
 void hal_pinInit(void);
 void hal_led_toggle(void);
+void hal_led_blink_red(void);
 void hal_led_green(void);
 void hal_led_red(void);
 void hal_led_none(void);
+void hal_led_both(void);
+void hal_low_power_enter(void);
 
 /*******************************************************************************
 * flash.c

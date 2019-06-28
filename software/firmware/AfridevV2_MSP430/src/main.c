@@ -32,9 +32,34 @@ static uint8_t rebootReason;                               /* Read from the MSP4
 * 
 * @return int Ignored
 */
+//#define LPM3_EXAMPLE 1
+
 int main(void)
 {
+#ifdef LPM3_EXAMPLE
+    // the following code is used to verify the lowest possible sleep current level with the hardware design
+    // no other peripherals are in use to increase power use
+    WDTCTL = WDT_ADLY_1000;                   // WDT 1s/4 interval timer
+    IE1 |= WDTIE;                             // Enable WDT interrupt
+    P1DIR = 0xFF;                             // All P1.x outputs
+    P1OUT = 0;                                // All P1.x reset
+    P2DIR = 0xFF;                             // All P2.x outputs
+    P2OUT = 0;                                // All P2.x reset
+    P2OUT |= I2C_DRV;
+    P3DIR = 0xFF;                             // All P2.x outputs
+    P3OUT = 0;                                // All P2.x reset
+    P4DIR = 0xFF;                             // All P4.x outputs
+    P4OUT = 0;                                // All P4.x reset
 
+    LED_GREEN_DISABLE();
+    while(1)
+    {
+      __bis_SR_register(LPM3_bits | GIE);     // Enter LPM3, enable interrupts
+      LED_RED_ENABLE();
+      __delay_cycles(7000);                   // Delay
+      LED_RED_DISABLE();
+    }
+#else
     // (Re)start and tickle the watchdog.  The watchdog is initialized for a
     // one second timeout.
     WATCHDOG_TICKLE();
@@ -56,8 +81,22 @@ int main(void)
     // Force watchdog reset
     WDTCTL = 0xDEAD;
     while (1);
+#endif
 }
 
+#ifdef LPM3_EXAMPLE
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
+#pragma vector = WDT_VECTOR
+__interrupt void watchdog_timer(void)
+#elif defined(__GNUC__)
+void __attribute__ ((interrupt(WDT_VECTOR))) watchdog_timer (void)
+#else
+#error Compiler not supported!
+#endif
+{
+  __bic_SR_register_on_exit(LPM3_bits);     // Clear LPM3 bits from 0(SR)
+}
+#endif
 /**
 * \brief Utility function to return the value of the IFG1 
 *        register read at app startup.
@@ -170,7 +209,11 @@ const uint16_t ProxyVectorTable[] =
     0x4030, (uint16_t)USCI0RX_ISR,                         // 0xFFEE APP_PROXY_VECTOR(6)  USCI I2C STAT
     0x4030, (uint16_t)Dummy_Isr,                           // 0xFFF0 APP_PROXY_VECTOR(7)  TA0_1
     0x4030, (uint16_t)ISR_Timer0_A0,                       // 0xFFF2 APP_PROXY_VECTOR(8)  TA0_0
+#ifdef LPM3_EXAMPLE
+    0x4030, (uint16_t)watchdog_timer,                      // 0xFFF4 APP_PROXY_VECTOR(9)  WDT
+#else	
     0x4030, (uint16_t)Dummy_Isr,                           // 0xFFF4 APP_PROXY_VECTOR(9)  WDT
+#endif
     0x4030, (uint16_t)Dummy_Isr,                           // 0xFFF6 APP_PROXY_VECTOR(10) COMP_A
     0x4030, (uint16_t)Dummy_Isr,                           // 0xFFF8 APP_PROXY_VECTOR(11) TB0_1
     0x4030, (uint16_t)TIMERB0_ISR,                         // 0xFFFA APP_PROXY_VECTOR(12) TB0_0

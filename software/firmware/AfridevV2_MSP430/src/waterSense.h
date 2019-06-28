@@ -11,6 +11,7 @@
 void waterSense_takeReading(void);
 uint8_t waterSense_analyzeData(void);
 void waterSenseReadInternalTemp(void);
+uint8_t waterSense_waterPresent(void);
 int16_t waterSenseGetTemp(void);
 
 /**

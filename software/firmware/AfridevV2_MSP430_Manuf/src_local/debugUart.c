@@ -332,6 +332,8 @@ void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_
 {
     uint8_t dbg_len = 0;
 
+    WATCHDOG_TICKLE();
+
 	if (!gps_isActive())
     {
 		memset(&water_report,' ',sizeof(Water_Data_t));
@@ -364,6 +366,8 @@ void debug_chgSummary(uint32_t sys_time)
     uint8_t dbg_len = 0;
     uint8_t change_count = 0;
 	
+    WATCHDOG_TICKLE();
+
 	if (!gps_isActive())
 	{
 	    MODEM_UART_SELECT_ENABLE();
@@ -391,6 +395,8 @@ void debug_daySummary(uint8_t context, uint32_t sys_time, uint16_t daysActivated
 		              uint32_t activatedLiterSum, uint16_t dayThreshold, bool newRedFlagCondition)
 {
     uint8_t dbg_len = 0;
+
+    WATCHDOG_TICKLE();
 
 	if (!gps_isActive())
 	{
@@ -438,6 +444,8 @@ void debug_logSummary(uint8_t context, uint32_t sys_time, uint8_t hour, uint16_t
 {
     uint8_t dbg_len = 0;
 
+    WATCHDOG_TICKLE();
+
 	if (!gps_isActive())
 	{
 	    MODEM_UART_SELECT_ENABLE();
@@ -467,6 +475,8 @@ void debug_logSummary(uint8_t context, uint32_t sys_time, uint8_t hour, uint16_t
 void debug_padTargets(void)  {
     uint8_t pad_number;
     uint8_t dbg_len = 0;
+
+    WATCHDOG_TICKLE();
 
     if (!gps_isActive())
     {
@@ -510,6 +520,9 @@ void debug_message(uint8_t *message)
 {
     uint8_t dbg_len = 0;
     uint8_t i;
+
+    WATCHDOG_TICKLE();
+
     if (!gps_isActive())
     {	
         MODEM_UART_SELECT_ENABLE();
@@ -528,6 +541,8 @@ void gps_debug_message(uint8_t *message)
     uint8_t dbg_len = 0;
     uint8_t i;
 	
+    WATCHDOG_TICKLE();
+
     MODEM_UART_SELECT_ENABLE();	
 	
     for (i = 0; message[i] && i < DEBUG_LINE_SIZE-2; i++)
@@ -641,6 +656,8 @@ void gps_debug_minmea_summary(uint8_t *gga, bool valid)
     uint8_t dbg_len = 0;
     GGA_FIELD_NAMES field_num;
     uint8_t i,loc;
+
+    WATCHDOG_TICKLE();
 
     // clear the gps_report
     memset(&gps_report,' ',sizeof(gps_report));

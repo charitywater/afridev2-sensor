@@ -903,6 +903,11 @@ uint16_t waterDetect_get_flow_rate(uint8_t level, uint8_t *percentile)
                 mean_diff = 100;
 
             *percentile = (uint8_t)mean_diff;
+
+            // eliminate trickle volume levels
+            if (level == 1 && *percentile < 50)
+                mean_diff = 0;
+
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
             volume = (mean_diff * pad_drain_volume[level - 1] * sysExecData.downspout_rate) / 100000;
 #else
@@ -1090,4 +1095,29 @@ void waterDetect_getPadInfo(Pad_Info_t *wr_in)
         for (i = 0; i < NUM_PADS; i++) 
 		    memcpy(&wr_in->pad[i], &pad_db[i].pad, sizeof(Pad_Stats_t));
     }
+}
+
+
+uint8_t waterDetect_waterPresent(uint16_t sample, uint8_t pad)
+{
+	uint8_t answer = false;
+	uint16_t air_deviation;
+
+	// make sure we have a valid air target
+	if (pad_db[pad].pad.state != STATE_UNKNOWN )
+	{
+		if (pad_db[pad].pad.target_air > sample)
+		{
+	       air_deviation = pad_db[pad].pad.target_air - sample;
+	       if (air_deviation >= SAMPLE_MIN_STATE_JUMP)
+	    	   answer = true;
+		}
+	}
+	else
+	{
+	    // if we don't have established air/water targets assume water is there (stay awake)
+		answer = true;
+	}
+
+	return (answer);
 }

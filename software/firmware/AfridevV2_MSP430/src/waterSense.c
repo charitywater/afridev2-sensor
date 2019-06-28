@@ -59,8 +59,7 @@ void waterSense_init(void)
 
     // set system default tuned value
     sysExecData.downspout_rate = TUNED_DOWNSPOUT_RATE;
-    padStats.water_limit = WATER_STUCK_LIMIT;
-    padStats.unknown_limit = UNKNOWN_LIMIT;
+    //padStats.water_limit = WATER_STUCK_LIMIT;  // this feature is no longer needed by default
 }
 
 /**
@@ -186,6 +185,29 @@ void waterSense_takeReading(void)
         waterDetect_add_sample(pad_number, padCounts[pad_number]);
     }
 }
+
+uint8_t waterSense_waterPresent(void)
+{
+	uint8_t answer;
+    uint16_t padCounts[TOTAL_PADS];
+
+    // Perform the capacitive measurements
+    TI_CAPT_Raw(&pad_sensors, &padCounts[0]);
+
+#ifdef WATERDETECT_READ_WATER_LEVEL_NORMAL
+    if (waterDetect_waterPresent(padCounts[5], 5))
+#else
+    if (waterDetect_waterPresent(padCounts[0], 0))
+#endif
+       answer = true;
+    else
+       answer = false;
+
+    return (answer);
+}
+
+
+
 
 /**
  * 
@@ -356,6 +378,9 @@ void waterSenseReadInternalTemp(void)
     volatile uint16_t timeoutCount;
 
     // Configure ADC
+    ADC_ENABLE();
+    __delay_cycles(2000);  // let it take effect
+
     ADC10CTL0 = 0;
     ADC10CTL1 = INCH_12 | ADC10DIV_3;
     ADC10CTL0 = SREF_1 | ADC10SHT_3 | REFON | ADC10ON | REF2_5V;
@@ -381,6 +406,7 @@ void waterSenseReadInternalTemp(void)
                                                            //    // Average
                                                            //    adc >>= 2;
 
+    ADC_DISABLE();
     //	c = (int)((6003L*adc-1722286L)>>16); //Example 23C
     c = (int)((60026L * adc - 17222860L) >> 16);           //Example 23.3C
 

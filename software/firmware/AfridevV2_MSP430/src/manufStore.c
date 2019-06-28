@@ -434,7 +434,11 @@ bool manufRecord_manuf_test_init()
 #endif
 	}
 #ifdef WATER_DEBUG
+#ifdef NO_GPS_TEST
+    if (1) {
+#else
 	if (mTestGPSDone()) {
+#endif
 		if (mTestWaterDone())
 		{
 			if (padStats.tempCelcius < 0)
@@ -472,7 +476,11 @@ void manufRecord_manuf_test_result()
 #ifdef WATER_DEBUG
 	if (sysExecData.mtest_state == MANUF_WATER_PASS)
 	{
-		if (mTestGPSDone())   // if both passed, then we are done
+#ifdef NO_GPS_TEST
+		if (1)   // if both passed, then we are done
+#else
+	    if (mTestGPSDone())   // if both passed, then we are done
+#endif
 		{
 			if (padStats.tempCelcius < 0)
 				debug_message("***Thermistor Failure***");
@@ -535,20 +543,27 @@ void manufRecord_update_LEDs()
 	    case SYSEXEC_SEND_TEST_RUNNING:
 		    // show modem progress by flashing leds
 	    	hal_led_toggle();
-		    sysExecData.led_on_time = 5;  // this will extinguish the led after toggle is no longer active
-		                                  // but not clear it right away
+		    sysExecData.led_on_time = 0;  // this prevents the toggle from being shut off
             break;
 
 	    case SYSEXEC_SEND_TEST_PASS:	
 			hal_led_green();
+#ifndef SLEEP_DEBUG
 			sysExecData.led_on_time = 150;  // 5 minute MAX led on time
+#else
+			sysExecData.led_on_time = 5;  // 10 second led on time (while sleep is tested)
+#endif
 		    manufRecord_updateManufRecord(MDR_Modem_Record, (uint8_t*)&mr,sizeof(MDRmodemRecord_t));
 			sysExecData.send_test_result = 0;	
 	        break;
 		
 	    case SYSEXEC_SEND_TEST_FAIL:			
 	        hal_led_red();
+#ifndef SLEEP_DEBUG
 			sysExecData.led_on_time = 150;  // 5 minute MAX led on time
+#else
+			sysExecData.led_on_time = 5;  // 10 second led on time (while sleep is tested)
+#endif
 		    manufRecord_updateManufRecord(MDR_Modem_Record, (uint8_t*)&mr,sizeof(MDRmodemRecord_t));
 			sysExecData.send_test_result = 0;
             break;

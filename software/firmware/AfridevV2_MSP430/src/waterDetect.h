@@ -19,10 +19,10 @@
 #define SAMPLE_TEMP_SHIFT_ALLOW 30
 #define SAMPLE_MIN_TARGET_RANGE 600
 
-#define SENSOR_MIN_DOWNSPOUT 400
+#define SENSOR_MIN_DOWNSPOUT 200
 // measured error -6% unit 16 v2.3 14 samples (580)
 // returning to old constant with flow bug fix v2.4 469
-#define TUNED_DOWNSPOUT_RATE 469
+#define TUNED_DOWNSPOUT_RATE 275
 #define SENSOR_MAX_DOWNSPOUT 800
 
 // if water is stuck on for 30 minutes, then reset the detection
@@ -118,6 +118,8 @@ int16_t waterDetect_getPadState(uint8_t pad_number, uint8_t *state, uint8_t *num
 uint8_t waterDetect_getPadChange(uint8_t pad_number);
 int16_t waterDetect_getPadChange_Air(uint8_t pad_number);
 int16_t waterDetect_getPadChange_Water(uint8_t pad_number);
+uint8_t waterDetect_waterPresent(uint16_t sample, uint8_t pad);
+
 void waterDetect_record_pads_baseline(void);
 
 uint16_t waterDetect_getPadTargetWidth(uint8_t padId);

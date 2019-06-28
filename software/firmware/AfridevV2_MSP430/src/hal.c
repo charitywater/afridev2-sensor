@@ -97,7 +97,8 @@ void hal_pinInit(void)
     // Note: BIT6 is for crystal XIN on P2.6
     P2DIR &= ~(BIT6);
     // Initialize P2 Outputs
-    P2OUT &= ~(I2C_DRV + GSM_EN + LS_VCC);
+    P2OUT &= ~(GSM_EN + LS_VCC);
+    P2OUT |= I2C_DRV;
 
     /***********/
     /* PORT P3 */
@@ -122,7 +123,7 @@ void hal_pinInit(void)
     P3DIR |= NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED;
     // Initialize P3 Outputs
     P3OUT &= ~(NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED);
-    P3OUT |= NTC_ENABLE + LED_GREEN + LED_RED;
+    P3OUT |= LED_GREEN + LED_RED;
 
     /***********/
     /* PORT P4 */
@@ -178,6 +179,24 @@ void hal_sysClockInit(void)
 }
 
 /**
+* \brief Blinks the red_led every other time it is called
+*/
+void hal_led_blink_red(void)
+{
+
+    if (!led_state)
+    {
+        LED_RED_ENABLE();
+        led_state = 1;
+    }
+    else
+    {
+        LED_RED_DISABLE();
+        led_state = 0;
+    }
+}
+
+/**
 * \brief Toggle the indicator LEDs from Red to Green and Green to Red
 * \ingroup PUBLIC_API
 */
@@ -205,7 +224,6 @@ void hal_led_toggle(void)
 void hal_led_green(void)
 {
     LED_GREEN_ENABLE();
-    LED_RED_DISABLE();
     led_state = 0;
 }
 
@@ -215,7 +233,6 @@ void hal_led_green(void)
 */
 void hal_led_red(void)
 {
-    LED_GREEN_DISABLE();
     LED_RED_ENABLE();
     led_state = 0;
 }
@@ -229,4 +246,22 @@ void hal_led_none(void)
     LED_GREEN_DISABLE();
     LED_RED_DISABLE();
     led_state = 0;
+}
+
+/**
+* \brief Turn both indicator LEDs on
+* \ingroup PUBLIC_API
+*/
+void hal_led_both(void)
+{
+    LED_GREEN_ENABLE();
+    LED_RED_ENABLE();
+    led_state = 0;
+}
+
+
+void hal_low_power_enter(void)
+{
+    // ultra-low_power sleep
+    __bis_SR_register(LPM3_bits + GIE);
 }
