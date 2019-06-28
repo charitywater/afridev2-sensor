@@ -1,0 +1,48 @@
+Fri Jun 28 15:51:34 2019:	* -----/|-------------------------------------------------------------------- *
+Fri Jun 28 15:51:34 2019:	*     / |__                                                                   *
+Fri Jun 28 15:51:34 2019:	*    /_   /   MSP Flasher v1.3.19                                             *
+Fri Jun 28 15:51:34 2019:	*      | /                                                                    *
+Fri Jun 28 15:51:34 2019:	* -----|/-------------------------------------------------------------------- *
+Fri Jun 28 15:51:34 2019:	*
+Fri Jun 28 15:51:34 2019:	* Evaluating triggers...done
+Fri Jun 28 15:51:34 2019:	* Checking for available FET debuggers: 
+Fri Jun 28 15:51:34 2019:	* Found USB FET @ COM4 <- Selected
+Fri Jun 28 15:51:34 2019:	* Initializing interface @ COM4...done
+Fri Jun 28 15:51:34 2019:	* Checking firmware compatibility: 
+Fri Jun 28 15:51:34 2019:	* FET firmware is up to date.
+Fri Jun 28 15:51:34 2019:	* Reading FW version...done
+Fri Jun 28 15:51:34 2019:	* Setting VCC to 3000 mV...done
+Fri Jun 28 15:51:34 2019:	* Accessing device...
+Fri Jun 28 15:51:37 2019:	# Exit: 16
+Fri Jun 28 15:51:37 2019:	# ERROR: Unknown device
+Fri Jun 28 15:51:37 2019:	* Powering down...done
+Fri Jun 28 15:51:37 2019:	* Disconnecting from device...done
+Fri Jun 28 15:51:37 2019:	* 
+Fri Jun 28 15:51:37 2019:	* ----------------------------------------------------------------------------
+Fri Jun 28 15:51:37 2019:	* Driver      : closed (Internal error)
+Fri Jun 28 15:51:37 2019:	* ----------------------------------------------------------------------------
+Fri Jun 28 15:51:37 2019:	*/
+Fri Jun 28 15:51:37 2019:	* -----/|-------------------------------------------------------------------- *
+Fri Jun 28 15:51:37 2019:	*     / |__                                                                   *
+Fri Jun 28 15:51:37 2019:	*    /_   /   MSP Flasher v1.3.19                                             *
+Fri Jun 28 15:51:37 2019:	*      | /                                                                    *
+Fri Jun 28 15:51:37 2019:	* -----|/-------------------------------------------------------------------- *
+Fri Jun 28 15:51:37 2019:	*
+Fri Jun 28 15:51:37 2019:	* Evaluating triggers...done
+Fri Jun 28 15:51:37 2019:	* Checking for available FET debuggers: 
+Fri Jun 28 15:51:38 2019:	* Found USB FET @ COM4 <- Selected
+Fri Jun 28 15:51:38 2019:	* Initializing interface @ COM4...done
+Fri Jun 28 15:51:38 2019:	* Checking firmware compatibility: 
+Fri Jun 28 15:51:38 2019:	* FET firmware is up to date.
+Fri Jun 28 15:51:38 2019:	* Reading FW version...done
+Fri Jun 28 15:51:38 2019:	* Setting VCC to 3000 mV...done
+Fri Jun 28 15:51:38 2019:	* Accessing device...
+Fri Jun 28 15:51:41 2019:	# Exit: 16
+Fri Jun 28 15:51:41 2019:	# ERROR: Unknown device
+Fri Jun 28 15:51:41 2019:	* Starting target code execution...done
+Fri Jun 28 15:51:41 2019:	* Disconnecting from device...done
+Fri Jun 28 15:51:41 2019:	* 
+Fri Jun 28 15:51:41 2019:	* ----------------------------------------------------------------------------
+Fri Jun 28 15:51:41 2019:	* Driver      : closed (Internal error)
+Fri Jun 28 15:51:41 2019:	* ----------------------------------------------------------------------------
+Fri Jun 28 15:51:41 2019:	*/
