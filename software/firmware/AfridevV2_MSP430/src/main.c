@@ -26,13 +26,16 @@ static uint8_t rebootReason;                               /* Read from the MSP4
 /***************************
  * Module Public Functions 
  **************************/
+//#define LPM3_EXAMPLE 1
 
+#ifdef LPM3_EXAMPLE
+extern uint8_t waterSense_waterPresent(void);
+#endif
 /**
 * \brief "C" entry point
 * 
 * @return int Ignored
 */
-//#define LPM3_EXAMPLE 1
 
 int main(void)
 {
@@ -41,20 +44,33 @@ int main(void)
     // no other peripherals are in use to increase power use
     WDTCTL = WDT_ADLY_1000;                   // WDT 1s/4 interval timer
     IE1 |= WDTIE;                             // Enable WDT interrupt
-    P1DIR = 0xFF;                             // All P1.x outputs
+#if 0
+    P1DIR = ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); //all inputs except 1.2,1.3
     P1OUT = 0;                                // All P1.x reset
-    P2DIR = 0xFF;                             // All P2.x outputs
+    P1REN &= ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); // disable internal pullup resisitor
+    P2SEL |= BIT6 + BIT7;                     // 32.768 kHz crystal input and output pins
+    P2DIR = ~(VBAT_MON+I2C_DRV+BIT6);         // set as input, VBAT_MON, I2C_DRV and 32.768 kHz crystal input, the rest outputs
     P2OUT = 0;                                // All P2.x reset
-    P2OUT |= I2C_DRV;
-    P3DIR = 0xFF;                             // All P2.x outputs
+    P2REN &= ~(VBAT_MON+I2C_DRV+BIT6);        // disable internal pullup resisitor
+    // Setup I/O for UART
+    P3SEL |= RXD + TXD;                       // enable UART
+    //P3DIR = ~TXD;                           // All P2.x outputs except txd pin
+    P3DIR = 0xFF;
+    //P3REN = ~TXD;                           // disable internal pullup resisitor
     P3OUT = 0;                                // All P2.x reset
     P4DIR = 0xFF;                             // All P4.x outputs
     P4OUT = 0;                                // All P4.x reset
-
+#else
+    hal_sysClockInit();
+    hal_pinInit();
+    hal_uartInit();
+#endif
     LED_GREEN_DISABLE();
+
     while(1)
     {
       __bis_SR_register(LPM3_bits | GIE);     // Enter LPM3, enable interrupts
+      waterSense_waterPresent();
       LED_RED_ENABLE();
       __delay_cycles(7000);                   // Delay
       LED_RED_DISABLE();

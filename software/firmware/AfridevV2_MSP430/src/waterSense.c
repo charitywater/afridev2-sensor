@@ -194,6 +194,9 @@ uint8_t waterSense_waterPresent(void)
     // Perform the capacitive measurements
     TI_CAPT_Raw(&pad_sensors, &padCounts[0]);
 
+    // make sure measurement is done
+    while (CAPSENSE_ACTIVE);
+
 #ifdef WATERDETECT_READ_WATER_LEVEL_NORMAL
     if (waterDetect_waterPresent(padCounts[5], 5))
 #else
@@ -378,7 +381,7 @@ void waterSenseReadInternalTemp(void)
     volatile uint16_t timeoutCount;
 
     // Configure ADC
-    ADC_ENABLE();
+    P3OUT |= NTC_ENABLE;
     __delay_cycles(2000);  // let it take effect
 
     ADC10CTL0 = 0;
@@ -406,7 +409,13 @@ void waterSenseReadInternalTemp(void)
                                                            //    // Average
                                                            //    adc >>= 2;
 
-    ADC_DISABLE();
+
+    // turn off enable conversion and the adc10 module itself (must be seperate operations)
+    ADC10CTL0 &= ~ENC;
+    __delay_cycles(10);  // let it take effect
+    ADC10CTL0 = 0;
+    P3OUT &= ~NTC_ENABLE;
+
     //	c = (int)((6003L*adc-1722286L)>>16); //Example 23C
     c = (int)((60026L * adc - 17222860L) >> 16);           //Example 23.3C
 

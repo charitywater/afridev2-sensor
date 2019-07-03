@@ -200,6 +200,16 @@ void sysExec_exec(void)
     // Restart the one-second watchdog timeout
     WATCHDOG_TICKLE();
 #endif
+
+#if 0
+    LED_GREEN_DISABLE();
+    LED_RED_DISABLE();
+    WATCHDOG_STOP();
+    timerA0_20sec_sleep();
+    hal_low_power_enter();
+    WATCHDOG_TICKLE();
+#endif
+
     waterSenseReadInternalTemp();
     // setup manufacturing testing and restore baseline water data from flash measured during
     // these tests

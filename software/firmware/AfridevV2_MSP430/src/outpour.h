@@ -99,7 +99,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x00
+#define FW_MINOR 0x01
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -262,8 +262,6 @@ typedef enum padId_e {
 #define LED_GREEN_ENABLE() (P3OUT &= ~LED_GREEN)
 #define LED_RED_DISABLE() (P3OUT |= LED_RED)
 #define LED_RED_ENABLE() (P3OUT &= ~LED_RED)
-#define ADC_ENABLE() (P3OUT |= NTC_ENABLE)
-#define ADC_DISABLE() (P3OUT &= ~NTC_ENABLE)
 
 /*******************************************************************************
 *  Centralized method for enabling and disabling MSP430 interrupts

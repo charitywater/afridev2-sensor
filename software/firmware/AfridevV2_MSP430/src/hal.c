@@ -61,19 +61,16 @@ void hal_pinInit(void)
     // Pin 1.0, No Connect
     // Pin 1.1, VBAT_GND, output, controls VBAT sensing, (Active LOW)
     // Pin 1.2, GSM_DCDC, output, controls (U4) (Active HIGH)
-    // Pin 1.3, _1V8_EN, output,  controls (U5) (Active HIGH)
-    // Pin 1.4, GSM_INT, input, SIM900 interrupt out
+    // Pin 1.3, _1V8_EN, output,  controls (U5) (Active HIGH)
+    // Pin 1.4, GSM_INT, input, SIM900 interrupt out
     // Pin 1.5, GSM_STATUS, input, SIM900 status out
     // Pin 1.6, TM_GPS, input, GPS Time Pulse
     // Pin 1.7, GPS_ON_IND, input, GPS System ON (inverted)
 
-    // Set P1 Direction - Outputs
-    P1DIR |= VBAT_GND + _1V8_EN + GSM_DCDC;                // Output
-                                                           // Set P1 Direction - Inputs
-    P1DIR &= ~(GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND);
-    // Initalize P1 Outputs
-    P1OUT &= ~(GSM_DCDC | _1V8_EN);
-    P1OUT |= VBAT_GND;
+    P1DIR = ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); //all inputs except 1.2,1.3
+    P1DIR |= _1V8_EN + GSM_DCDC;              // Output
+    P1OUT = 0;                                // All P1.x reset
+    P1REN &= ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); // disable internal pullup resisitor
 
     /***********/
     /* PORT P2 */
@@ -88,17 +85,12 @@ void hal_pinInit(void)
     // Pin 2.6, Crystal XIN, input
     // Pin 2.7, Crystal XOUT, output
 
-    // configure pins for crystal on P2.6,P2.7
-    P2SEL |= BIT6 + BIT7;
-    // Set P2 Direction - Output
+    P2SEL |= BIT6 + BIT7;                     // 32.768 kHz crystal input and output pins
+    P2DIR = ~(VBAT_MON+I2C_DRV+BIT6);         // set as input, VBAT_MON, I2C_DRV and 32.768 kHz crystal input, the rest outputs
     // Note: BIT7 is for crystal XOUT on P2.7
-    P2DIR |= I2C_DRV + GSM_EN + LS_VCC + BIT7;
-    // Set P2 Direction - Input
-    // Note: BIT6 is for crystal XIN on P2.6
-    P2DIR &= ~(BIT6);
-    // Initialize P2 Outputs
-    P2OUT &= ~(GSM_EN + LS_VCC);
-    P2OUT |= I2C_DRV;
+    P2DIR |= GSM_EN + LS_VCC + BIT7;
+    P2OUT = 0;                                // All P2.x reset
+    P2REN &= ~(VBAT_MON+I2C_DRV+BIT6);        // disable internal pullup resisitor
 
     /***********/
     /* PORT P3 */
@@ -112,18 +104,10 @@ void hal_pinInit(void)
     // Pin 3.5, UART RX, Special
     // Pin 3.7, MSP_UART_SEL, Output, Cell=0,GPS=1
 
-#ifdef USE_UART_SIGNALS_FOR_GPIO
-    // If using UART signals for timing GPIO outputs
-    P3DIR |= RXD + TXD + NTC_ENABLE + LED_GREEN + LED_RED;
-#else
     // Setup I/O for UART
-    P3SEL |= RXD + TXD;
-#endif
-    // Set P3 Direction - Output
-    P3DIR |= NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED;
-    // Initialize P3 Outputs
-    P3OUT &= ~(NTC_ENABLE + MSP_UART_SEL + LED_GREEN + LED_RED);
-    P3OUT |= LED_GREEN + LED_RED;
+    P3SEL |= RXD + TXD;                       // enable UART
+    P3DIR = 0xFF;
+    P3OUT = LED_GREEN + LED_RED;
 
     /***********/
     /* PORT P4 */
@@ -138,12 +122,8 @@ void hal_pinInit(void)
     // Pin 4.6, PAD2
     // Pin 4.7, PAD0
 
-    // Set P4 Direction - Outputs
-    P4DIR |= GPS_ON_OFF;
-    // Set P4 Direction - Inputs
-    P4DIR &= ~(NTC_SENSE_INPUT);
-    // Initialize P4 Outputs
-    P4OUT &= ~(GPS_ON_OFF);
+    P4DIR = ~NTC_SENSE_INPUT;                 // All P4.x outputs except NTC_SENSE_INPUT
+    P4OUT = 0;                                // All P4.x reset
 
     led_state = 0;
 }
