@@ -67,10 +67,10 @@ void hal_pinInit(void)
     // Pin 1.6, TM_GPS, input, GPS Time Pulse
     // Pin 1.7, GPS_ON_IND, input, GPS System ON (inverted)
 
-    P1DIR = ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); //all inputs except 1.2,1.3
+    P1DIR = (uint8_t) ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); //all inputs except 1.2,1.3
     P1DIR |= _1V8_EN + GSM_DCDC;              // Output
     P1OUT = 0;                                // All P1.x reset
-    P1REN &= ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); // disable internal pullup resisitor
+    P1REN &= (uint8_t) ~(VBAT_GND + GSM_INT + GSM_STATUS + TM_GPS + GPS_ON_IND); // disable internal pullup resisitor
 
     /***********/
     /* PORT P2 */

@@ -241,7 +241,7 @@ void sysExec_exec(void)
         // performed. In LF water measurement mode, we want to take a batch of
         // measurements periodically.
         // water measurements are done only when the sleep mode is not active
-        if (sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT && !sysExecData.time_elapsed)
+        if ((sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT) && !sysExecData.time_elapsed)
         {
 #ifndef WATER_DEBUG
             if (!modemMgr_isAllocated() && !gps_isActive())
@@ -263,22 +263,33 @@ void sysExec_exec(void)
         {
             // zero the main loop counter
             exec_main_loop_counter = 0;
-            temperature_loop_counter++;
-
-            // Take a temperature measurement every 20 seconds
-            if (temperature_loop_counter > 10)
-            {
-                temperature_loop_counter = 0;
-                waterSenseReadInternalTemp();
-            }
 
             // only do water measurements when not sleeping
             if (!sysExecData.time_elapsed)
+            {
+                temperature_loop_counter++;
+
+                // Take a temperature measurement every 20 seconds while awake
+                if (temperature_loop_counter > 10)
+                {
+                    temperature_loop_counter = 0;
+                    waterSenseReadInternalTemp();
+                }
                 currentFlowRateInMLPerSec =  processWaterAnalysis();
+            }
             else
+            {
+                // we were sleeping 20 seconds, read the temperature
+                temperature_loop_counter = 0;
+                waterSenseReadInternalTemp();
                 currentFlowRateInMLPerSec = 0;
+            }
+
             // Record the water stats and initiate periodic communication
             storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.time_elapsed);
+            // prepare for next iteration of this loop to be sure water measurements are made
+            sysExecData.time_elapsed = 0;
+
 #ifndef WATER_DEBUG
             // Perform communication support - these run the state machines
             // that perform the software modem interaction.  They do not
@@ -382,15 +393,7 @@ void sysExec_exec(void)
  **************************/
 
 /**
- * \brief Call the water data analysis routine. Check if the 
- *        system should move to the low-frequency (LF)
- *        measurement mode in order to save power. This
- *        happens if no water has been detected for a certain
- *        amount of time. By default, the system is in the
- *        high-frequency (HF) measurement mode.  When in LF
- *        measurement mode, the water analysis function is
- *        not performed on every call. When in HF measurement
- *        mode, it is.
+ * \brief Call the water data analysis routine.
  * 
  * @return uint16_t Returns the current flow rate measured in 
  *         milliliters per second.
@@ -398,77 +401,12 @@ void sysExec_exec(void)
 static uint16_t analyzeWaterMeasurementData(void)
 {
     uint16_t currentFlowRateInMLPerSec = 0;
-    bool waterDetectedFlag = false;
-    bool didWaterAnalysisFlag = false;
 
-    // When in LF measurement mode, a batch of water data analysis calls will be
-    // performed  before deciding if the LF measurement mode should continue. If
-    // in HF measurement mode, then waterMeasDelayCount will be zero and the water
-    // analysis is performed on every call. If water is detected on any measurement,
-    // then the system will always return to HF measurement mode.
+    // Perform algorithm to analyze water data samples.
+    waterSense_analyzeData();
 
-    // In LF water measurement mode, take a batch of measurements periodically.
-    // In HF water measurement mode, the waterMeasDelayCount will always be zero.
-    if (sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT)
-    {
-
-        // Perform algorithm to analyze water data samples.
-        waterSense_analyzeData();
-
-        // Read the flow rate in milliliters per second
-        currentFlowRateInMLPerSec = waterSense_getLastMeasFlowRateInML();
-
-        if (currentFlowRateInMLPerSec)
-        {
-            waterDetectedFlag = true;
-        }
-        didWaterAnalysisFlag = true;
-    }
-
-    if (didWaterAnalysisFlag && waterDetectedFlag)
-    {
-        // If water flow is detected, then clear all LF water measurement counters.
-        sysExecData.noWaterMeasCount = 0;
-        sysExecData.waterMeasDelayCount = 0;
-    }
-
-    // Perform checks to determine if system should go into LF measurement mode.
-    else
-    {
-
-        // Once the noWaterMeasCount reaches the timeout count, it will no
-        // longer change until water has been detected, keeping the water
-        // measurement interval in the LF mode.
-
-        // For the compare, the NO_WATER_HF_TO_LF_TIME_IN_SECONDS is divided by
-        // two (SECONDS_PER_TREND) because the noWaterMeasCount count is incremented
-        // once every two seconds.
-
-        if (sysExecData.noWaterMeasCount < ((NO_WATER_HF_TO_LF_TIME_IN_SECONDS >> SECONDS_PER_TREND_SHIFT)-1))
-        {
-            // The noWaterMeasCount is incremented once every two seconds.
-            sysExecData.noWaterMeasCount++;
-        }
-        else
-        {
-            // No water has been detected for at least NO_WATER_HF_TO_LF_TIME_IN_SECONDS.
-            // Stay in the LF water measurement mode in order to save power.
-            // If the waterMeasDelayCount has expired, re-start the LF delay countdown.
-            if (!sysExecData.waterMeasDelayCount)
-            {
-                // Set the delay counter based on how often the waterMeasDelayCount is
-                // decremented within the exec main loop. It is decremented once every
-                // two seconds (SECONDS_PER_TREND)
-                sysExecData.waterMeasDelayCount = (LOW_FREQUENCY_MEAS_TIME_IN_SECONDS >> SECONDS_PER_TREND_SHIFT);
-            }
-        }
-    }
-
-    // If the LF delay count is non-zero, then decrement it.
-    if (sysExecData.waterMeasDelayCount)
-    {
-        sysExecData.waterMeasDelayCount--;
-    }
+    // Read the flow rate in milliliters per second
+    currentFlowRateInMLPerSec = waterSense_getLastMeasFlowRateInML();
 
     return (currentFlowRateInMLPerSec);
 }
@@ -738,6 +676,9 @@ uint8_t lowPowerMode_check(void)
                        uint32_t sys_time = getSecondsSinceBoot();
                        debug_logSummary('W', sys_time, 0, 0, 0);
 #endif
+                       // this keeps the unit in "dry mode" without overflowing the counter (if dry a long time > 9 hours)
+                       sysExecData.dry_count = sysExecData.dry_wake_time + 1;
+                       time_elapsed = 20;
                    }
                    else
                        hal_led_none();

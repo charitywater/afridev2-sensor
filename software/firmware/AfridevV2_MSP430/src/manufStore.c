@@ -546,7 +546,8 @@ void manufRecord_update_LEDs()
 		    sysExecData.led_on_time = 0;  // this prevents the toggle from being shut off
             break;
 
-	    case SYSEXEC_SEND_TEST_PASS:	
+	    case SYSEXEC_SEND_TEST_PASS:
+	        hal_led_none();
 			hal_led_green();
 #ifndef SLEEP_DEBUG
 			sysExecData.led_on_time = 150;  // 5 minute MAX led on time
@@ -557,7 +558,8 @@ void manufRecord_update_LEDs()
 			sysExecData.send_test_result = 0;	
 	        break;
 		
-	    case SYSEXEC_SEND_TEST_FAIL:			
+	    case SYSEXEC_SEND_TEST_FAIL:
+            hal_led_none();
 	        hal_led_red();
 #ifndef SLEEP_DEBUG
 			sysExecData.led_on_time = 150;  // 5 minute MAX led on time

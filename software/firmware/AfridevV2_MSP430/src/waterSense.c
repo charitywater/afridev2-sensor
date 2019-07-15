@@ -59,7 +59,7 @@ void waterSense_init(void)
 
     // set system default tuned value
     sysExecData.downspout_rate = TUNED_DOWNSPOUT_RATE;
-    //padStats.water_limit = WATER_STUCK_LIMIT;  // this feature is no longer needed by default
+    padStats.water_limit = WATER_STUCK_LIMIT;  // this feature is no longer needed by default
 }
 
 /**
@@ -177,6 +177,9 @@ void waterSense_takeReading(void)
 
     // Perform the capacitive measurements
     TI_CAPT_Raw(&pad_sensors, &padCounts[0]);
+
+    // make sure measurement is done
+    while (CAPSENSE_ACTIVE);
 
     // Loop for each pad.
 
