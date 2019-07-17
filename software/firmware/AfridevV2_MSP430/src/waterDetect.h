@@ -20,9 +20,8 @@
 #define SAMPLE_MIN_TARGET_RANGE 600
 
 #define SENSOR_MIN_DOWNSPOUT 200
-// measured error -6% unit 16 v2.3 14 samples (580)
-// returning to old constant with flow bug fix v2.4 469
-#define TUNED_DOWNSPOUT_RATE 275
+// measured error -4% unit 29 v3.2c 15 samples
+#define TUNED_DOWNSPOUT_RATE 547
 #define SENSOR_MAX_DOWNSPOUT 800
 
 // if water is stuck on for 30 minutes, then reset the detection
