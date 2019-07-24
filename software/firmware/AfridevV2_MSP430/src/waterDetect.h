@@ -24,8 +24,9 @@
 #define TUNED_DOWNSPOUT_RATE 547
 #define SENSOR_MAX_DOWNSPOUT 800
 
-// if water is stuck on for 30 minutes, then reset the detection
-#define WATER_STUCK_LIMIT 900
+// if water is stuck on for 30 minutes, then reset the detection. 30 min = 900
+// if water is stuck on for 12 hours, then that is really something. 12 hours = 21600
+#define WATER_STUCK_LIMIT 21600
 // if unknowns are reported in 90 consecutive 2-second readings (3 minutes), then alert
 #define UNKNOWN_LIMIT 90
 
