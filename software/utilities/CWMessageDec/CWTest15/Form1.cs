@@ -221,15 +221,28 @@ namespace cwtest
             else
                 direction = "N";
             lats = Convert.ToString(lat);
-            if (lats.Length >= 8)
+            if (lats.Length > 6)
             {
                 degrees = lats.Substring(0, lats.Length - 6);
-                minutes = lats.Substring(lats.Length - 6, 2) + "." + lats.Substring(lats.Length - 4, 4);
+                lats = lats.Substring(lats.Length - 6, 6);
             }
             else
+                degrees = "0";
+            if (lats.Length > 4)
             {
-                degrees = "??";
-                minutes = "??.????";
+                minutes = lats.Substring(0, lats.Length - 4);
+                lats = lats.Substring(lats.Length - 4, 4);
+            }
+            else
+                minutes = "0";
+            if (lats.Length > 0)
+            {
+                string pad0 = "0000";
+                // pad with 0's the fractional part that isnt there (0.0123)
+                if (lats.Length < 4)
+                    minutes = minutes + "." + pad0.Substring(0, 4 - lats.Length) + lats;
+                else
+                    minutes = minutes + "." + lats;
             }
             lats = degrees + " " + minutes + direction;
 
@@ -257,16 +270,30 @@ namespace cwtest
             else
                 direction = "E";
             lons = Convert.ToString(lon);
-            if (lons.Length >= 8)
+            if (lons.Length > 6)
             {
                 degrees = lons.Substring(0, lons.Length - 6);
-                minutes = lons.Substring(lons.Length - 6, 2) + "." + lons.Substring(lons.Length - 4, 4);
+                lons = lons.Substring(lons.Length - 6, 6);
+            }
+            else 
+                degrees = "0";
+            if (lons.Length > 4)
+            {
+                minutes = lons.Substring(0, lons.Length - 4);
+                lons = lons.Substring(lons.Length - 4, 4);
             }
             else
+                minutes = "0";
+            if (lons.Length > 0)
             {
-                degrees = "??";
-                minutes = "??.????";
+                string pad0 = "0000";
+                // pad with 0's the fractional part that isnt there (0.0123)
+                if (lons.Length < 4)
+                    minutes = minutes + "." + pad0.Substring(0, 4 - lons.Length) + lons;
+                else
+                    minutes = minutes + "." + lons;
             }
+
             lons = degrees + " " + minutes + direction;
 
             return (lons);

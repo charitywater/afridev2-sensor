@@ -21,7 +21,8 @@ C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\De
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\Charity Water Message Decode.pdb
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\bin\Debug\Charity Water Message Decode.exe
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\bin\Debug\Charity Water Message Decode.pdb
-C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\CWTest15.csprojResolveAssemblyReference.cache
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\cwtest.Form1.resources
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\CWMessageDec.Properties.Resources.resources
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\CWTest15.csproj.GenerateResource.Cache
+C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\CWTest15.csproj.CoreCompileInputs.cache
+C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Debug\CWTest15.csprojAssemblyReference.cache
