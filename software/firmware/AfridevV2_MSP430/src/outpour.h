@@ -34,16 +34,20 @@
  * when WATER_DEBUG is defined 
  */
 #ifdef WATER_DEBUG
-//#define WATERDETECT_READ_WATER_LEVEL_NORMAL
+//#define WATERDETECT_READ_WATER_LEVEL_NORMAL 1
+#define READ_WATER_BETWEEN_SLEEPS 1
 //#define NO_GPS_TEST 1
 #define SLEEP_DEBUG 1
+#define DISPLAY_ALL_PADDATA 1
 #else
-#define WATERDETECT_READ_WATER_LEVEL_NORMAL
+#define WATERDETECT_READ_WATER_LEVEL_NORMAL 1
+#define READ_WATER_BETWEEN_SLEEPS 1
 //#define SLEEP_DEBUG 1
 //#define DEBUG_BATTERY_TEST 1
 //#define DEBUG_SEND_SENSOR_DATA_NOW 1
-//#define DEBUG_DAILY_WATER_REPORTS 1
-//#define RED_FLAG_TEST
+#define DEBUG_DAILY_WATER_REPORTS 1
+//#define RED_FLAG_TEST 1
+//#define TRICKLE_VOLUME_ELIMINATE 1
 #endif
 /**
  * \def TICKS_PER_TREND
@@ -99,7 +103,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x03
+#define FW_MINOR 0x06
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -546,7 +550,7 @@ typedef struct Water_Data_s {
     uint8_t pad4[9];                                       /**< current pad4 capacitance value OR current air deviation*/
     uint8_t pad5[9];                                       /**< current pad5 capacitance value OR current air deviation*/
     uint8_t level[2];                                      /**< current water level detected L1 to L6 */
-    uint8_t flow[10];                                      /**< current water flow estimate for last 2 seconds in ml */
+    uint8_t flow[15];                                      /**< current water flow estimate for last 2 seconds in ml */
     uint8_t zero;                                          /**< end of string, always zero */
 } Water_Data_t;
 

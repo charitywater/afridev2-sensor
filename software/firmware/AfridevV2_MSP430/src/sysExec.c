@@ -76,7 +76,7 @@ sysExecData_t sysExecData;
  * Module Prototypes
  ************************/
 
-static uint16_t analyzeWaterMeasurementData(void);
+static uint16_t analyzeWaterMeasurementData(uint8_t num_samples);
 
 static void startUpMessageCheck(void);
 static bool startUpSendTestCheck(void);
@@ -96,7 +96,7 @@ static void sysExec_sendDebugDataToUart(void);
  * Module Public Functions
  **************************/
 
-uint16_t processWaterAnalysis(void)
+uint16_t processWaterAnalysis(num_samples)
 {
     uint16_t currentFlowRateInMLPerSec = 0;
 
@@ -108,7 +108,7 @@ uint16_t processWaterAnalysis(void)
     if (!gps_isActive())
     {
     #endif
-        currentFlowRateInMLPerSec = analyzeWaterMeasurementData();
+        currentFlowRateInMLPerSec = analyzeWaterMeasurementData(num_samples);
 
         // make sure there is no water on the pads when saving the baseline
         if (sysExecData.saveCapSensorBaselineData && currentFlowRateInMLPerSec == 0)
@@ -275,14 +275,36 @@ void sysExec_exec(void)
                     temperature_loop_counter = 0;
                     waterSenseReadInternalTemp();
                 }
-                currentFlowRateInMLPerSec =  processWaterAnalysis();
+                currentFlowRateInMLPerSec =  processWaterAnalysis(SAMPLE_COUNT);
+                waterDetect_start();  // prepare for next session
             }
             else
             {
                 // we were sleeping 20 seconds, read the temperature
                 temperature_loop_counter = 0;
+                waterDetect_start();
                 waterSenseReadInternalTemp();
+#ifdef READ_WATER_BETWEEN_SLEEPS
+#ifndef WATER_DEBUG
+                if (!modemMgr_isAllocated() && !gps_isActive())
+#else
+                if (!gps_isActive())
+#endif
+                {
+
+                    // there is a perceived problem with the unit sleeping and not tracking water consumption while
+                	// sleeping.   This will update the water data between sleep attempts
+                    waterSense_takeReading();
+                    currentFlowRateInMLPerSec = processWaterAnalysis(1);
+#ifdef WATER_DEBUG
+                    uint32_t sys_time = getSecondsSinceBoot();
+                    debug_pour_total(sys_time, currentFlowRateInMLPerSec);
+#endif
+                }
+#else
                 currentFlowRateInMLPerSec = 0;
+#endif
+                waterDetect_start();  // prepare for next session
             }
 
             // Record the water stats and initiate periodic communication
@@ -398,12 +420,12 @@ void sysExec_exec(void)
  * @return uint16_t Returns the current flow rate measured in 
  *         milliliters per second.
  */
-static uint16_t analyzeWaterMeasurementData(void)
+static uint16_t analyzeWaterMeasurementData(uint8_t num_samples)
 {
     uint16_t currentFlowRateInMLPerSec = 0;
 
     // Perform algorithm to analyze water data samples.
-    waterSense_analyzeData();
+    waterSense_analyzeData(num_samples);
 
     // Read the flow rate in milliliters per second
     currentFlowRateInMLPerSec = waterSense_getLastMeasFlowRateInML();

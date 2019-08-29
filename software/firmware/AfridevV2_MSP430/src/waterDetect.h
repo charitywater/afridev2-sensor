@@ -24,6 +24,8 @@
 #define TUNED_DOWNSPOUT_RATE 547
 #define SENSOR_MAX_DOWNSPOUT 800
 
+#define TRICKLE_PERCENTAGE 50
+
 // if water is stuck on for 30 minutes, then reset the detection. 30 min = 900
 // if water is stuck on for 12 hours, then that is really something. 12 hours = 21600
 #define WATER_STUCK_LIMIT 21600
@@ -102,10 +104,11 @@ typedef struct
 } Sample_Data_t;
 
 void waterDetect_init(void);
+void waterDetect_start(void);
 void waterDetect_clear_stats(void);
 void waterDetect_add_sample(uint8_t pad_number, uint16_t pad_meas);
 void waterDetect_update_stats(void);
-void waterDetect_mark_outliers(void);
+void waterDetect_mark_outliers(uint8_t num_samples);
 uint8_t waterDetect_debug_msg(uint8_t *dst, uint8_t pad);
 uint8_t waterDetect_read_water_level(uint8_t *submergedPadsBitMask, uint8_t *unknowns);
 uint8_t waterDetect_read_sample_count(void);

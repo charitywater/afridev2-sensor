@@ -8,8 +8,12 @@
 #ifndef SRC_WATERSENSE_H_
 #define SRC_WATERSENSE_H_
 
+
+#define UNKNOWN_TRICKLE_VOLUME 0x0FFFF
+#define TRICKLE_VOLUME_TOL 10
+
 void waterSense_takeReading(void);
-uint8_t waterSense_analyzeData(void);
+uint8_t waterSense_analyzeData(uint8_t num_samples);
 void waterSenseReadInternalTemp(void);
 uint8_t waterSense_waterPresent(void);
 int16_t waterSenseGetTemp(void);
@@ -27,6 +31,7 @@ typedef struct sensorStats_s {
     uint16_t sequential_waters;                            /**< Number of sequential pumping while water is seen */
     uint16_t water_limit;                                  /**< Number of sequential measurements with water before restting */
     int16_t tempCelcius;                                   /**< Temperature reading from chip */
+    uint16_t trickleVolume;                                /**< Last amount of water detected below the trickle level */
     uint8_t pump_active;                                   /**< Current status of pump */
     uint8_t air_wait;                                      /**< wait to reestablish air target */
 } sensorStats_t;

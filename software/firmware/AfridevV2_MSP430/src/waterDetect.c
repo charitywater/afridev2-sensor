@@ -10,6 +10,10 @@
 #include "waterDetect.h"
 #include "waterSense.h"
 
+#ifdef WATER_DEBUG
+#include "debugUart.h"
+#endif
+
 Pad_Data_t pad_db[NUM_PADS];
 Sample_Data_t sample_db[NUM_PADS];
 uint8_t outlier_count;
@@ -249,6 +253,15 @@ void waterDetect_clear_stats(void)
     }
 }
 
+void waterDetect_start(void)
+{
+    uint8_t i;
+
+    // redirect the new sample data to start at index 0
+    for (i=0; i< NUM_PADS; i++)
+       pad_db[i].cursor = 0;
+}
+
 /**
 * \brief Adds capacitive sensor readings to this object's sample "database"
 *       each pad has a cursor where the next sample is written if a pad is
@@ -259,6 +272,7 @@ void waterDetect_clear_stats(void)
 *
 * \ingroup PUBLIC_API
 */
+
 void waterDetect_add_sample(uint8_t pad_number, uint16_t pad_meas)
 {
     Sample_Data_t *sample_data = &sample_db[pad_number];
@@ -285,7 +299,7 @@ void waterDetect_add_sample(uint8_t pad_number, uint16_t pad_meas)
 *
 * \ingroup PUBLIC_API
 */
-void waterDetect_mark_outliers(void)
+void waterDetect_mark_outliers(uint8_t num_samples)
 {
     uint8_t pad_number;
 
@@ -300,7 +314,7 @@ void waterDetect_mark_outliers(void)
 
         pad_db[pad_number].pad.num_samp = 0;
         sum = 0;
-        for (sample_number = 0; sample_number < SAMPLE_COUNT; sample_number++)
+        for (sample_number = 0; sample_number < num_samples; sample_number++)
         {
             if (pad_db[pad_number].pad.last_mean &&
                 (samp[sample_number] < pad_db[pad_number].pad.last_mean - SAMPLE_MAX_JUMP ||
@@ -320,7 +334,18 @@ void waterDetect_mark_outliers(void)
         if (pad_db[pad_number].pad.num_samp)
             pad_db[pad_number].mean = sum / pad_db[pad_number].pad.num_samp;
         else
+        {
             pad_db[pad_number].mean = 0;                   // this should NOT happen ever
+#ifdef WATER_DEBUG
+            debug_message("***NO DATA!***");
+            __delay_cycles(1000);
+#endif
+        }
+        // clear processed data out
+        for (sample_number = 0; sample_number < SAMPLE_COUNT; sample_number++)
+        {
+            samp[sample_number] = OUTLIER;
+        }
     }
 }
 
@@ -904,9 +929,11 @@ uint16_t waterDetect_get_flow_rate(uint8_t level, uint8_t *percentile)
 
             *percentile = (uint8_t)mean_diff;
 
+#ifdef TRICKLE_VOLUME_ELIMINATE
             // eliminate trickle volume levels
-            if (level == 1 && *percentile < 50)
+            if (level == 1 && *percentile < TRICKLE_PERCENTAGE)
                 mean_diff = 0;
+#endif
 
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
             volume = (mean_diff * pad_drain_volume[level - 1] * sysExecData.downspout_rate) / 100000;

@@ -60,6 +60,7 @@ void waterSense_init(void)
     // set system default tuned value
     sysExecData.downspout_rate = TUNED_DOWNSPOUT_RATE;
     padStats.water_limit = WATER_STUCK_LIMIT;  // this feature set to 12 hours
+    padStats.trickleVolume = UNKNOWN_TRICKLE_VOLUME;
 }
 
 /**
@@ -223,7 +224,7 @@ uint8_t waterSense_waterPresent(void)
  * @return uint8_t numOfSubmergedPads: Raw count of submerged
  *         sensors
  */
-uint8_t waterSense_analyzeData(void)
+uint8_t waterSense_analyzeData(uint8_t num_samples)
 {
     uint8_t unknowns = 0;
     uint8_t percentile;
@@ -241,7 +242,7 @@ uint8_t waterSense_analyzeData(void)
     }
 #endif
 
-    waterDetect_mark_outliers();
+    waterDetect_mark_outliers(num_samples);
     waterDetect_update_stats();
 
     numOfSubmergedPads = waterDetect_read_water_level(&submergedPadsBitMask, &unknowns);
@@ -249,6 +250,47 @@ uint8_t waterSense_analyzeData(void)
     if (numOfSubmergedPads)
     {
         padStats.lastMeasFlowRateInMl = waterDetect_get_flow_rate(numOfSubmergedPads, &percentile);
+
+#ifndef TRICKLE_VOLUME_ELIMINATE
+        if (numOfSubmergedPads == 1)
+        {
+            if (padStats.trickleVolume != UNKNOWN_TRICKLE_VOLUME)
+            {
+                // deal with trickling
+                if (percentile < TRICKLE_PERCENTAGE )
+                {
+                    // this cancels out trickling similar to the way the waterDetect code did before
+                    padStats.lastMeasFlowRateInMl = 0;
+                }
+
+                // deal with standing water above trickling level
+                if (padStats.lastMeasFlowRateInMl)
+                {
+                    // this "finds" standing water (from the check valve or out of level well)
+                    // this is the lowest trickle volume seen recently within 10 ml of the last minimum
+                    if (padStats.lastMeasFlowRateInMl <= padStats.trickleVolume+TRICKLE_VOLUME_TOL )
+                    {
+                        padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
+                        padStats.lastMeasFlowRateInMl = 0;
+#ifdef WATER_DEBUG
+                        debug_message("<<TVolMin>>");
+#endif
+                    }
+                }
+            }
+            else
+            {
+                // set initial standing water level
+                padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
+                padStats.lastMeasFlowRateInMl = 0;
+#ifdef WATER_DEBUG
+                debug_message("<<TVolInit>>");
+#endif
+            }
+        }
+        else
+
+#endif
         sysExecData.total_flow += padStats.lastMeasFlowRateInMl;
         padStats.sequential_waters++;
 
@@ -324,14 +366,14 @@ uint8_t waterSense_analyzeData(void)
     // debug messages are selected/deselected in debugUart.h
     uint32_t sys_time = getSecondsSinceBoot();
 
-    debug_padSummary(sys_time, numOfSubmergedPads, unknowns, padStats.pump_active, 0);
+    debug_padSummary(sys_time, numOfSubmergedPads, unknowns, padStats.pump_active, 0, padStats.trickleVolume);
 #endif
 
     if (!padStats.pump_active && (numOfSubmergedPads == NUM_PADS))
     {
-#ifdef WATER_DEBUG
         waterDetect_set_water_target();
-
+        padStats.trickleVolume = UNKNOWN_TRICKLE_VOLUME;   // re-find the trickle volume
+#ifdef WATER_DEBUG
         if (sysExecData.mtest_state != MANUF_UNIT_PASS)
             waterDetect_record_pads_water();
 #endif
@@ -344,9 +386,9 @@ uint8_t waterSense_analyzeData(void)
         if (!padStats.air_wait)
         {
             padStats.pump_active = 0;
-#ifdef WATER_DEBUG
-            waterDetect_set_air_target();
 
+            waterDetect_set_air_target();
+#ifdef WATER_DEBUG
             if (sysExecData.mtest_state != MANUF_UNIT_PASS)
                 sysExecData.mtest_state = MANUF_WATER_PASS;
 #endif

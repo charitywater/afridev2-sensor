@@ -231,7 +231,7 @@ static int debug_level(uint8_t *dest, uint8_t level)
     return (i);
 }
 
-static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns)
+static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns, uint16_t trickleVol)
 {
     uint8_t i = 0;
     uint8_t percentile;
@@ -239,6 +239,7 @@ static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns)
     uint16_t flow_rate = waterDetect_get_flow_rate(level,&percentile);
 
     dest[i++] = 'F';
+    dest[i++] = ((flow_rate / 1000) % 10) + '0';
     dest[i++] = ((flow_rate / 100) % 10) + '0';
     dest[i++] = ((flow_rate / 10) % 10) + '0';
     dest[i++] = (flow_rate % 10) + '0';
@@ -247,6 +248,19 @@ static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns)
     dest[i++] = ((percentile / 100) % 10) + '0';
     dest[i++] = ((percentile / 10) % 10) + '0';
     dest[i++] = (percentile % 10) + '0';
+    dest[i++] = 'T';
+    if (trickleVol != 0xFFFF)
+    {
+        dest[i++] = ((trickleVol / 100) % 10) + '0';
+        dest[i++] = ((trickleVol / 10) % 10) + '0';
+        dest[i++] = (trickleVol % 10) + '0';
+    }
+    else
+    {
+        dest[i++] = '?';
+        dest[i++] = '?';
+        dest[i++] = '?';
+    }
     dest[i++] = unknowns ? 'u' : ' ';
     dest[i++] = '\n';
     return (i);
@@ -328,7 +342,7 @@ static int debug_sample_out(uint8_t *dest, uint8_t pad_number)
 
 
 //called by waterSense.c
-void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline)
+void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline, uint16_t trickleVol)
 {
     uint8_t dbg_len = 0;
 
@@ -339,7 +353,11 @@ void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_
 		memset(&water_report,' ',sizeof(Water_Data_t));
 	    MODEM_UART_SELECT_ENABLE();
 	    // only display when one or more pads is covered with water
+#ifdef DISPLAY_ALL_PADDATA
+	    if (1)
+#else
 	    if (level>0 || baseline || unknowns > 0 || pump_active > 0)
+#endif
 	    {
 			debug_time(water_report.time, sys_time);
 			debug_temp_out(water_report.tempc, waterSense_getTempCelcius());
@@ -350,7 +368,7 @@ void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_
 			debug_pad_meas(water_report.pad4,4,baseline);
 			debug_pad_meas(water_report.pad5,5,baseline);
 			debug_level(water_report.level, level);
-			debug_flow_out(water_report.flow, level, unknowns);
+			debug_flow_out(water_report.flow, level, unknowns, trickleVol );
 			water_report.zero = 0;
 		    memcpy(&dbg_line[0],&water_report,sizeof(Water_Data_t));
 		    dbg_len += sizeof(Water_Data_t);
