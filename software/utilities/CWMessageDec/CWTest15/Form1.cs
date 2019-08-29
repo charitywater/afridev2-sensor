@@ -795,10 +795,24 @@ namespace cwtest
 
             string water_limits = textBoxFA_Message.Text.Substring(248, 4);
             string water_resets = textBoxFA_Message.Text.Substring(252, 4);
+            string trickle_vols = "????";
+            if (textBoxFA_Message.Text.Length >= 260)
+                trickle_vols = textBoxFA_Message.Text.Substring(256, 4);
             int water_limit = int.Parse(big_endian(water_limits), System.Globalization.NumberStyles.HexNumber);
             int water_reset = int.Parse(big_endian(water_resets), System.Globalization.NumberStyles.HexNumber);
+            int trickle_vol = 0;
+            if (textBoxFA_Message.Text.Length >= 260)
+                trickle_vol = int.Parse(big_endian(trickle_vols), System.Globalization.NumberStyles.HexNumber);
             textBoxSDWaterLim.Text = Convert.ToString(water_limit);
             textBoxSDwaterResets.Text = Convert.ToString(water_reset);
+            textBoxSDtrickleVol.Text = Convert.ToString(trickle_vol);
+           
+            // build csv string for excel sheet analysis
+            textBoxCSVstring.Text = textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + "0,0,0,0,0,0,";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDlastMean0.Text + "," + textBoxSDlastMean1.Text + "," + textBoxSDlastMean2.Text + "," + textBoxSDlastMean3.Text + "," + textBoxSDlastMean4.Text + "," + textBoxSDlastMean5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDwaterTarg0.Text + "," + textBoxSDwaterTarg1.Text + "," + textBoxSDwaterTarg2.Text + "," + textBoxSDwaterTarg3.Text + "," + textBoxSDwaterTarg4.Text + "," + textBoxSDwaterTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtotalVol.Text + "," + textBoxSDairTemp5.Text;
         }
 
 

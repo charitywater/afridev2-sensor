@@ -241,14 +241,17 @@
             this.label62 = new System.Windows.Forms.Label();
             this.label61 = new System.Windows.Forms.Label();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label81 = new System.Windows.Forms.Label();
+            this.textBoxWaterLimit = new System.Windows.Forms.TextBox();
+            this.textBoxUnkLimit = new System.Windows.Forms.TextBox();
+            this.label80 = new System.Windows.Forms.Label();
+            this.label79 = new System.Windows.Forms.Label();
+            this.comboBoxSensorReq = new System.Windows.Forms.ComboBox();
             this.textBoxSensorData = new System.Windows.Forms.TextBox();
             this.label78 = new System.Windows.Forms.Label();
-            this.comboBoxSensorReq = new System.Windows.Forms.ComboBox();
-            this.label79 = new System.Windows.Forms.Label();
-            this.label80 = new System.Windows.Forms.Label();
-            this.textBoxUnkLimit = new System.Windows.Forms.TextBox();
-            this.textBoxWaterLimit = new System.Windows.Forms.TextBox();
-            this.label81 = new System.Windows.Forms.Label();
+            this.textBoxCSVstring = new System.Windows.Forms.TextBox();
+            this.label82 = new System.Windows.Forms.Label();
+            this.textBoxSDtrickleVol = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -1480,6 +1483,8 @@
             // 
             // groupBox13
             // 
+            this.groupBox13.Controls.Add(this.textBoxSDtrickleVol);
+            this.groupBox13.Controls.Add(this.label82);
             this.groupBox13.Controls.Add(this.textBoxSDwaterResets);
             this.groupBox13.Controls.Add(this.label77);
             this.groupBox13.Controls.Add(this.textBoxSDWaterLim);
@@ -2439,19 +2444,80 @@
             this.groupBox7.Controls.Add(this.textBoxSensorData);
             this.groupBox7.Controls.Add(this.label78);
             this.groupBox7.Location = new System.Drawing.Point(577, 662);
-            this.groupBox7.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Padding = new System.Windows.Forms.Padding(4);
+            this.groupBox7.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBox7.Size = new System.Drawing.Size(503, 142);
             this.groupBox7.TabIndex = 53;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Sensor Data";
             // 
+            // label81
+            // 
+            this.label81.AutoSize = true;
+            this.label81.Location = new System.Drawing.Point(15, 30);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(97, 17);
+            this.label81.TabIndex = 55;
+            this.label81.Text = "Request Type";
+            // 
+            // textBoxWaterLimit
+            // 
+            this.textBoxWaterLimit.Location = new System.Drawing.Point(120, 102);
+            this.textBoxWaterLimit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.textBoxWaterLimit.Name = "textBoxWaterLimit";
+            this.textBoxWaterLimit.Size = new System.Drawing.Size(100, 22);
+            this.textBoxWaterLimit.TabIndex = 54;
+            // 
+            // textBoxUnkLimit
+            // 
+            this.textBoxUnkLimit.Location = new System.Drawing.Point(120, 66);
+            this.textBoxUnkLimit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.textBoxUnkLimit.Name = "textBoxUnkLimit";
+            this.textBoxUnkLimit.Size = new System.Drawing.Size(100, 22);
+            this.textBoxUnkLimit.TabIndex = 45;
+            // 
+            // label80
+            // 
+            this.label80.AutoSize = true;
+            this.label80.Location = new System.Drawing.Point(15, 102);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(79, 17);
+            this.label80.TabIndex = 44;
+            this.label80.Text = "Water Limit";
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.Location = new System.Drawing.Point(15, 68);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(99, 17);
+            this.label79.TabIndex = 43;
+            this.label79.Text = "Unknown Limit";
+            // 
+            // comboBoxSensorReq
+            // 
+            this.comboBoxSensorReq.FormattingEnabled = true;
+            this.comboBoxSensorReq.Items.AddRange(new object[] {
+            "Reqest Sensor Data (0)",
+            "Overwrite Factory Data (1)",
+            "Reset Water Detect (2)",
+            "Set Unknown Limit (3)",
+            "Report Sensor Data Now (4)",
+            "Set Downspout Rate (5)",
+            "Set Water Stuck Limit (6)"});
+            this.comboBoxSensorReq.Location = new System.Drawing.Point(120, 22);
+            this.comboBoxSensorReq.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.comboBoxSensorReq.Name = "comboBoxSensorReq";
+            this.comboBoxSensorReq.Size = new System.Drawing.Size(271, 24);
+            this.comboBoxSensorReq.TabIndex = 42;
+            this.comboBoxSensorReq.SelectedIndexChanged += new System.EventHandler(this.comboBoxSensorReq_SelectedIndexChanged);
+            // 
             // textBoxSensorData
             // 
             this.textBoxSensorData.BackColor = System.Drawing.SystemColors.Highlight;
             this.textBoxSensorData.Location = new System.Drawing.Point(259, 107);
-            this.textBoxSensorData.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxSensorData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxSensorData.Name = "textBoxSensorData";
             this.textBoxSensorData.ReadOnly = true;
             this.textBoxSensorData.Size = new System.Drawing.Size(199, 22);
@@ -2467,69 +2533,37 @@
             this.label78.TabIndex = 40;
             this.label78.Text = "OTA Message";
             // 
-            // comboBoxSensorReq
+            // textBoxCSVstring
             // 
-            this.comboBoxSensorReq.FormattingEnabled = true;
-            this.comboBoxSensorReq.Items.AddRange(new object[] {
-            "Reqest Sensor Data (0)",
-            "Overwrite Factory Data (1)",
-            "Reset Water Detect (2)",
-            "Set Unknown Limit (3)",
-            "Report Sensor Data Now (4)",
-            "Set Downspout Rate (5)",
-            "Set Water Stuck Limit (6)"});
-            this.comboBoxSensorReq.Location = new System.Drawing.Point(120, 22);
-            this.comboBoxSensorReq.Name = "comboBoxSensorReq";
-            this.comboBoxSensorReq.Size = new System.Drawing.Size(271, 24);
-            this.comboBoxSensorReq.TabIndex = 42;
-            this.comboBoxSensorReq.SelectedIndexChanged += new System.EventHandler(this.comboBoxSensorReq_SelectedIndexChanged);
+            this.textBoxCSVstring.Location = new System.Drawing.Point(52, 932);
+            this.textBoxCSVstring.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.textBoxCSVstring.Name = "textBoxCSVstring";
+            this.textBoxCSVstring.Size = new System.Drawing.Size(1539, 22);
+            this.textBoxCSVstring.TabIndex = 54;
             // 
-            // label79
+            // label82
             // 
-            this.label79.AutoSize = true;
-            this.label79.Location = new System.Drawing.Point(15, 68);
-            this.label79.Name = "label79";
-            this.label79.Size = new System.Drawing.Size(99, 17);
-            this.label79.TabIndex = 43;
-            this.label79.Text = "Unknown Limit";
+            this.label82.AutoSize = true;
+            this.label82.Location = new System.Drawing.Point(8, 543);
+            this.label82.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label82.Name = "label82";
+            this.label82.Size = new System.Drawing.Size(101, 17);
+            this.label82.TabIndex = 139;
+            this.label82.Text = "Trickle Volume";
             // 
-            // label80
+            // textBoxSDtrickleVol
             // 
-            this.label80.AutoSize = true;
-            this.label80.Location = new System.Drawing.Point(15, 102);
-            this.label80.Name = "label80";
-            this.label80.Size = new System.Drawing.Size(79, 17);
-            this.label80.TabIndex = 44;
-            this.label80.Text = "Water Limit";
-            // 
-            // textBoxUnkLimit
-            // 
-            this.textBoxUnkLimit.Location = new System.Drawing.Point(120, 67);
-            this.textBoxUnkLimit.Name = "textBoxUnkLimit";
-            this.textBoxUnkLimit.Size = new System.Drawing.Size(100, 22);
-            this.textBoxUnkLimit.TabIndex = 45;
-            // 
-            // textBoxWaterLimit
-            // 
-            this.textBoxWaterLimit.Location = new System.Drawing.Point(120, 102);
-            this.textBoxWaterLimit.Name = "textBoxWaterLimit";
-            this.textBoxWaterLimit.Size = new System.Drawing.Size(100, 22);
-            this.textBoxWaterLimit.TabIndex = 54;
-            // 
-            // label81
-            // 
-            this.label81.AutoSize = true;
-            this.label81.Location = new System.Drawing.Point(15, 29);
-            this.label81.Name = "label81";
-            this.label81.Size = new System.Drawing.Size(97, 17);
-            this.label81.TabIndex = 55;
-            this.label81.Text = "Request Type";
+            this.textBoxSDtrickleVol.Location = new System.Drawing.Point(161, 537);
+            this.textBoxSDtrickleVol.Name = "textBoxSDtrickleVol";
+            this.textBoxSDtrickleVol.Size = new System.Drawing.Size(68, 22);
+            this.textBoxSDtrickleVol.TabIndex = 140;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1639, 967);
+            this.Controls.Add(this.textBoxCSVstring);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.groupBox13);
             this.Controls.Add(this.groupBox12);
@@ -2803,6 +2837,9 @@
         private System.Windows.Forms.TextBox textBoxSensorData;
         private System.Windows.Forms.Label label78;
         private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.TextBox textBoxCSVstring;
+        private System.Windows.Forms.TextBox textBoxSDtrickleVol;
+        private System.Windows.Forms.Label label82;
     }
 }
 
