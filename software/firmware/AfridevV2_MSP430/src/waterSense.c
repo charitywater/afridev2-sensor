@@ -213,8 +213,65 @@ uint8_t waterSense_waterPresent(void)
     return (answer);
 }
 
+#ifndef TRICKLE_VOLUME_ELIMINATE
+/**
+ *
+ * @brief Estimate the amount of standing water that could be continually read as
+ * flowing water
+ *
+ * @param uint8_7 percentile: percent of highest pad covered with water
+ * @param uint8_t numOfSubmergedPads: Raw count of submerged
+ *         sensors
+ */
+void waterSense_trickeVolume(uint8_t percentile, uint8_t numOfSubmergedPads)
+{
+    if (numOfSubmergedPads == 1)
+    {
+        if (padStats.trickleVolume != UNKNOWN_TRICKLE_VOLUME)
+        {
+            // deal with trickling
+            if (percentile < TRICKLE_PERCENTAGE )
+            {
+                // this cancels out trickling similar to the way the waterDetect code did before
+                padStats.lastMeasFlowRateInMl = 0;
+            }
 
-
+            // deal with standing water above trickling level
+            if (padStats.lastMeasFlowRateInMl)
+            {
+                // this "finds" standing water (from the check valve or out of level well)
+                // this is the lowest trickle volume seen recently within 10 ml of the last minimum
+                if (padStats.lastMeasFlowRateInMl <= padStats.trickleVolume+TRICKLE_VOLUME_TOL )
+                {
+                    padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
+                    padStats.lastMeasFlowRateInMl = 0;
+#ifdef WATER_DEBUG
+                    debug_message("<<TVolMin>>");
+#endif
+                }
+                else if (padStats.lastMeasFlowRateInMl > padStats.trickleVolume+TRICKLE_VOLUME_TOL )
+                {
+                    // the level of standing water may be rising, recalculate the new level
+                    padStats.trickleVolume = UNKNOWN_TRICKLE_VOLUME;
+                    padStats.lastMeasFlowRateInMl = 0;
+                }
+            }
+        }
+        else if (padStats.lastMeasFlowRateInMl)
+        {
+            // set initial standing water level
+            if (percentile >= TRICKLE_PERCENTAGE )
+            {
+                padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
+#ifdef WATER_DEBUG
+                debug_message("<<TVolInit>>");
+#endif
+            }
+            padStats.lastMeasFlowRateInMl = 0;
+        }
+    }
+}
+#endif
 
 /**
  * 
@@ -252,44 +309,7 @@ uint8_t waterSense_analyzeData(uint8_t num_samples)
         padStats.lastMeasFlowRateInMl = waterDetect_get_flow_rate(numOfSubmergedPads, &percentile);
 
 #ifndef TRICKLE_VOLUME_ELIMINATE
-        if (numOfSubmergedPads == 1)
-        {
-            if (padStats.trickleVolume != UNKNOWN_TRICKLE_VOLUME)
-            {
-                // deal with trickling
-                if (percentile < TRICKLE_PERCENTAGE )
-                {
-                    // this cancels out trickling similar to the way the waterDetect code did before
-                    padStats.lastMeasFlowRateInMl = 0;
-                }
-
-                // deal with standing water above trickling level
-                if (padStats.lastMeasFlowRateInMl)
-                {
-                    // this "finds" standing water (from the check valve or out of level well)
-                    // this is the lowest trickle volume seen recently within 10 ml of the last minimum
-                    if (padStats.lastMeasFlowRateInMl <= padStats.trickleVolume+TRICKLE_VOLUME_TOL )
-                    {
-                        padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
-                        padStats.lastMeasFlowRateInMl = 0;
-#ifdef WATER_DEBUG
-                        debug_message("<<TVolMin>>");
-#endif
-                    }
-                }
-            }
-            else
-            {
-                // set initial standing water level
-                padStats.trickleVolume = padStats.lastMeasFlowRateInMl;
-                padStats.lastMeasFlowRateInMl = 0;
-#ifdef WATER_DEBUG
-                debug_message("<<TVolInit>>");
-#endif
-            }
-        }
-        else
-
+        waterSense_trickeVolume(percentile, numOfSubmergedPads);
 #endif
         sysExecData.total_flow += padStats.lastMeasFlowRateInMl;
         padStats.sequential_waters++;

@@ -87,7 +87,7 @@ static void sendStartUpMsg2(void);
 static void sendSensorDataMsg(void);
 static void sysExec_doReboot(void);
 #endif
-uint8_t lowPowerMode_check(void);
+uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec);
 #ifdef SEND_DEBUG_INFO_TO_UART
 static void sysExec_sendDebugDataToUart(void);
 #endif
@@ -406,7 +406,7 @@ void sysExec_exec(void)
 #endif
         } // every 4 clock ticks
 
-        sysExecData.time_elapsed = lowPowerMode_check();  //every clock tick
+        sysExecData.time_elapsed = lowPowerMode_check(currentFlowRateInMLPerSec);  //every clock tick
     } // end while 1
 }
 
@@ -648,7 +648,7 @@ static void sendStartUpMsg2(void)
 * \brief This function will check if the pump has been idle long enough to put the unit to sleep for 20 seconds
 *        For debugging the leds are being flashed to show when water is detected (green)and when the unit is sleeping (red)
 */
-uint8_t lowPowerMode_check(void)
+uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
 {
     static volatile int blink_red = 0;
     uint8_t time_elapsed  = 0;
@@ -659,7 +659,7 @@ uint8_t lowPowerMode_check(void)
         // do not go to sleep if the modem is busy with updates or send test. or the gps is measuring
          if (sysExecData.send_test_result != SYSEXEC_SEND_TEST_RUNNING && !gps_isActive() && !modemMgr_isAllocated())
          {
-                if (waterSense_waterPresent())
+                if (currentFlowRateInMLPerSec > 0)
                 {
                    sysExecData.dry_count = 0;
 #ifdef SLEEP_DEBUG
