@@ -806,13 +806,29 @@ namespace cwtest
             textBoxSDWaterLim.Text = Convert.ToString(water_limit);
             textBoxSDwaterResets.Text = Convert.ToString(water_reset);
             textBoxSDtrickleVol.Text = Convert.ToString(trickle_vol);
-           
+
             // build csv string for excel sheet analysis
-            textBoxCSVstring.Text = textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + "0,0,0,0,0,0,";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDlastMean0.Text + "," + textBoxSDlastMean1.Text + "," + textBoxSDlastMean2.Text + "," + textBoxSDlastMean3.Text + "," + textBoxSDlastMean4.Text + "," + textBoxSDlastMean5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDwaterTarg0.Text + "," + textBoxSDwaterTarg1.Text + "," + textBoxSDwaterTarg2.Text + "," + textBoxSDwaterTarg3.Text + "," + textBoxSDwaterTarg4.Text + "," + textBoxSDwaterTarg5.Text + ",";
-            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtotalVol.Text + "," + textBoxSDairTemp5.Text;
+            if (textBoxSDtotalVol.Text.Length > 3)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtotalVol.Text.Substring(0, textBoxSDtotalVol.Text.Length - 3) + "." + textBoxSDtotalVol.Text.Substring(textBoxSDtotalVol.Text.Length - 3, 3) + ",";
+            else if (textBoxSDtotalVol.Text.Length > 2)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0." + textBoxSDtotalVol.Text + ",";
+            else if (textBoxSDtotalVol.Text.Length > 1)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.0" + textBoxSDtotalVol.Text + ",";
+            else if (textBoxSDtotalVol.Text.Length > 0)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.00" + textBoxSDtotalVol.Text + ",";
+            else
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.000" + ",";
+            if (textBoxSDairTemp5.Text.Length > 1)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTemp5.Text.Substring(0,textBoxSDairTemp5.Text.Length-1) + "." + textBoxSDairTemp5.Text.Substring(textBoxSDairTemp5.Text.Length - 1,1) + ",";
+            else
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0."+ textBoxSDairTemp5.Text + ",";
+
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtrickleVol.Text;
         }
 
 
@@ -1113,6 +1129,12 @@ namespace cwtest
                 case 6: textBoxSensorData.Text = space_bytes("0F5AA506" + big_endian(WtrLmit.ToString("X4"))); break;
                 default: break;
             }
+        }
+
+        private void ButtonCSVRefresh_Click(object sender, EventArgs e)
+        {
+            parse_sensor_data_message();
+            this.Refresh();
         }
     }
 }

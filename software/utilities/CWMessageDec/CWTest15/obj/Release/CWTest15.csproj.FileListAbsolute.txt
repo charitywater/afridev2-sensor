@@ -25,4 +25,3 @@ C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Re
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Release\CWMessageDec.Properties.Resources.resources
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Release\CWTest15.csproj.GenerateResource.Cache
 C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Release\CWTest15.csproj.CoreCompileInputs.cache
-C:\Users\robl\Documents\Visual Studio 2015\Projects\CWMessageDec\CWTest15\obj\Release\CWTest15.csprojAssemblyReference.cache
