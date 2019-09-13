@@ -11,6 +11,8 @@
 
 #define UNKNOWN_TRICKLE_VOLUME 0x0FFFF
 #define TRICKLE_VOLUME_TOL 10
+#define AIRWAIT_TIME 4
+#define PUMP_ACTIVE_LEVEL 3
 
 void waterSense_takeReading(void);
 uint8_t waterSense_analyzeData(uint8_t num_samples);

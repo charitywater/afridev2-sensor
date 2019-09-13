@@ -673,6 +673,8 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                    // capsense interrupts would wake this instantly wait until the sensing is done 
                    if (sysExecData.dry_count++ > sysExecData.dry_wake_time && !CAPSENSE_ACTIVE)
                    {
+                       // keep track of consecutive sleeps, if > 5 add a second to the time
+                       sysExecData.sleep_count++;
 #ifdef SLEEP_DEBUG
                        //hal_led_red();  // for debug only - red LED to indicate sleep
                        //sysExecData.led_on_time = 0;  // prevent the manufRecord_update_LEDs() from clearing the toggle
@@ -690,7 +692,12 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                        timerA0_20sec_sleep();
                        hal_low_power_enter();
                        timerA0_inter_sample_sleep();
-
+                       // correct ~1% inaccuracy in RTC due to sleeping
+                       if (sysExecData.sleep_count>=5)
+                       {
+                           incrementSeconds();
+                           sysExecData.sleep_count = 0;
+                       }
                        for (time_elapsed = 0; time_elapsed < 20; time_elapsed++)
                           incrementSeconds();
                        WATCHDOG_TICKLE();

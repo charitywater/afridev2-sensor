@@ -389,7 +389,8 @@ uint8_t waterSense_analyzeData(uint8_t num_samples)
     debug_padSummary(sys_time, numOfSubmergedPads, unknowns, padStats.pump_active, 0, padStats.trickleVolume);
 #endif
 
-    if (!padStats.pump_active && (numOfSubmergedPads == NUM_PADS))
+    // if the pump is idle and now at Level 3 or higher, it's a new session
+    if (!padStats.pump_active && (numOfSubmergedPads >= PUMP_ACTIVE_LEVEL))
     {
         waterDetect_set_water_target();
         padStats.trickleVolume = UNKNOWN_TRICKLE_VOLUME;   // re-find the trickle volume
@@ -397,7 +398,7 @@ uint8_t waterSense_analyzeData(uint8_t num_samples)
         if (sysExecData.mtest_state != MANUF_UNIT_PASS)
             waterDetect_record_pads_water();
 #endif
-        padStats.air_wait = 2;                             // wait an extra 4 second period for the water to drip away from pads to re-establish
+        padStats.air_wait = AIRWAIT_TIME;                  // wait an extra 8 second period for the water to drip away from pads to re-establish
                                                            // air target
         padStats.pump_active = 1;
     }

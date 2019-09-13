@@ -534,6 +534,33 @@ void debug_pour_total(uint32_t sys_time, uint32_t total_pour)
 	}
 }
 
+void debug_RTC_time(timePacket_t *tp, uint8_t marker)
+{
+    uint8_t dbg_len = 0;
+
+    dbg_line[dbg_len++]='#';
+    dbg_line[dbg_len++]=marker;
+    dbg_line[dbg_len++]=(tp->month/10)+'0';
+    dbg_line[dbg_len++]=(tp->month%10)+'0';
+    dbg_line[dbg_len++]='/';
+    dbg_line[dbg_len++]=(tp->day/10)+'0';
+    dbg_line[dbg_len++]=(tp->day%10)+'0';
+    dbg_line[dbg_len++]='/';
+    dbg_line[dbg_len++]=(tp->year/10)+'0';
+    dbg_line[dbg_len++]=(tp->year%10)+'0';
+    dbg_line[dbg_len++]=' ';
+    dbg_line[dbg_len++]=(tp->hour24/10)+'0';
+    dbg_line[dbg_len++]=(tp->hour24%10)+'0';
+    dbg_line[dbg_len++]=':';
+    dbg_line[dbg_len++]=(tp->minute/10)+'0';
+    dbg_line[dbg_len++]=(tp->minute%10)+'0';
+    dbg_line[dbg_len++]=':';
+    dbg_line[dbg_len++]=(tp->second/10)+'0';
+    dbg_line[dbg_len++]=(tp->second%10)+'0';
+    dbg_line[dbg_len++]='\n';
+    dbg_uart_write(dbg_line, dbg_len);
+}
+
 void debug_message(uint8_t *message)
 {
     uint8_t dbg_len = 0;
@@ -808,6 +835,8 @@ void gps_debug_minmea_summary(uint8_t *gga, bool valid)
     while(!dbg_uart_txqempty());  // send the rest of the debug data
     GPS_UART_SELECT_ENABLE();
 }
+
+
 
 
 /**

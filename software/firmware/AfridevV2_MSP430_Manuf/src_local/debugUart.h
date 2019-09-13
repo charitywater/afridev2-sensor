@@ -63,6 +63,8 @@ void debug_sampProgress(void);
 void debug_padTargets(void);
 void debug_sample_dump(void);
 void debug_internalTemp(uint32_t sys_time, int16_t temp);
+void debug_RTC_time(timePacket_t *tp, uint8_t marker);
+
 extern void gps_debug_message(uint8_t *message);
 extern void gps_debug_minmea_summary(uint8_t *gga, bool valid);
 void debug_pour_total(uint32_t sys_time, uint32_t total_pour);
