@@ -1509,6 +1509,9 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
             // set time that unit has no water before sleeping
             sysExecData.dry_wake_time = requestData;
             break;
+        case SENSOR_NOP_RESPONSE:
+            // respond with NOP so the clock can be adjusted without a reset command
+            break;
         default:
             // Invalid request type
             error = true;

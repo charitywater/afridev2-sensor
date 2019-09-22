@@ -909,10 +909,15 @@ static void recordLastMinute(void)
 #ifdef WATER_DEBUG   // Exclude this section for water debug
     if (!gps_isActive())
     {
-        // debug messages are selected/deselected in debugUart.h
-        uint32_t sys_time = getSecondsSinceBoot();
+        timePacket_t NowTime;
 
-        debug_logSummary('M', sys_time, stData.storageTime_hours, stData.minuteMilliliterSum, stData.hourMilliliterSum);
+        // debug messages are selected/deselected in debugUart.h
+        //uint32_t sys_time = getSecondsSinceBoot();
+
+        //debug_logSummary('M', sys_time, stData.storageTime_hours, stData.minuteMilliliterSum, stData.hourMilliliterSum);
+
+        getBinTime(&NowTime);
+        debug_RTC_time(&NowTime,'M');
     }
 #endif
     stData.minuteMilliliterSum = 0;

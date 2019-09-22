@@ -151,7 +151,6 @@ uint16_t processWaterAnalysis(num_samples)
 */
 void sysExec_exec(void)
 {
-
     uint8_t exec_main_loop_counter = 0;
     uint8_t temperature_loop_counter = 0;
     uint16_t currentFlowRateInMLPerSec = 0;
@@ -652,6 +651,7 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
 {
     static volatile int blink_red = 0;
     uint8_t time_elapsed  = 0;
+    timePacket_t NowTime;
 
     if (sysExecData.dry_wake_time > 0)
     {
@@ -702,8 +702,8 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                           incrementSeconds();
                        WATCHDOG_TICKLE();
 #ifdef WATER_DEBUG
-                       uint32_t sys_time = getSecondsSinceBoot();
-                       debug_logSummary('W', sys_time, 0, 0, 0);
+                       getBinTime(&NowTime);
+                       debug_RTC_time(&NowTime,'W');
 #endif
                        // this keeps the unit in "dry mode" without overflowing the counter (if dry a long time > 9 hours)
                        sysExecData.dry_count = sysExecData.dry_wake_time + 1;
