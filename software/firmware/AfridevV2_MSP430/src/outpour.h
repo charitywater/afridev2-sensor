@@ -103,7 +103,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x09
+#define FW_MINOR 0x0A
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -371,6 +371,7 @@ typedef struct sysExecData_s {
     uint8_t waterMeasDelayCount;                           /**< Delay next water measurement count-down */
     uint8_t time_elapsed;                                  /**< Time that the unit slept during low power mode check */
     uint8_t sleep_count;                                   /**< The number of consecutive sleeps to make accuracy adjustment */
+    uint8_t sleep_alot;                                    /**< The longer number of consecutive sleeps to make additional clock adjustment */
     MANUF_STATE_T mtest_state;                             /**< Manufacturing test State */
 } sysExecData_t;
 

@@ -675,6 +675,7 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                    {
                        // keep track of consecutive sleeps, if > 5 add a second to the time
                        sysExecData.sleep_count++;
+                       sysExecData.sleep_alot++;
 #ifdef SLEEP_DEBUG
                        //hal_led_red();  // for debug only - red LED to indicate sleep
                        //sysExecData.led_on_time = 0;  // prevent the manufRecord_update_LEDs() from clearing the toggle
@@ -692,11 +693,20 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                        timerA0_20sec_sleep();
                        hal_low_power_enter();
                        timerA0_inter_sample_sleep();
-                       // correct ~1% inaccuracy in RTC due to sleeping
+                       // correct inaccuracy in RTC due to sleeping
+                       // every 100 seconds (5*20), add 1 second
                        if (sysExecData.sleep_count>=5)
                        {
                            incrementSeconds();
                            sysExecData.sleep_count = 0;
+                       }
+                       // every 1020 seconds (51*20), add 3 seconds
+                       if (sysExecData.sleep_alot>=51)
+                       {
+                           incrementSeconds();
+                           incrementSeconds();
+                           incrementSeconds();
+                           sysExecData.sleep_alot = 0;
                        }
                        for (time_elapsed = 0; time_elapsed < 20; time_elapsed++)
                           incrementSeconds();
