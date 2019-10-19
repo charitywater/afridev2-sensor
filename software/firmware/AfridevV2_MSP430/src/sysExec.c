@@ -86,6 +86,9 @@ static void sendStartUpMsg2(void);
 #ifndef WATER_DEBUG
 static void sendSensorDataMsg(void);
 static void sysExec_doReboot(void);
+#ifdef SEND_DEBUG_TIME_DATA
+static void sendTimeStampMsg(void);
+#endif
 #endif
 uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec);
 #ifdef SEND_DEBUG_INFO_TO_UART
@@ -226,22 +229,16 @@ void sysExec_exec(void)
         // Go into low power mode.
         // Wake on the exit of the TimerA0 interrupt.
         // Wakes every .5 seconds to run the main loop
-        if (!sysExecData.time_elapsed)
+        if (!sysExecData.last_sleep_time)
            __bis_SR_register(LPM3_bits);
 
         // Restart the one-second watchdog timeout
         WATCHDOG_TICKLE();
 
         // Take a water measurement
-        // Don't take a measurement if the modem or GPS is in use or the water
-        // measurement delay count is above the batch count. The waterMeasDelay
-        // count is always zero in HF water measurement mode. In LF water measurement
-        // mode, the counter is used to control how often the water measurements are
-        // performed. In LF water measurement mode, we want to take a batch of
-        // measurements periodically.
-        // water measurements are done only when the sleep mode is not active
-        if ((sysExecData.waterMeasDelayCount < WATER_LF_MEAS_BATCH_COUNT) && !sysExecData.time_elapsed)
+        if (!sysExecData.last_sleep_time)
         {
+            // Don't take a measurement if the modem or GPS is in use
 #ifndef WATER_DEBUG
             if (!modemMgr_isAllocated() && !gps_isActive())
 #else
@@ -250,21 +247,22 @@ void sysExec_exec(void)
             {
                 waterSense_takeReading();
             }
+            // Increment main loop counter
+            exec_main_loop_counter++;
         }
-
-        // Increment main loop counter
-        exec_main_loop_counter++;
 
         // Perform system tasks every SECONDS_PER_TREND (i.e. every 2 seconds)
         // which is every fourth time that the exec main loop runs.
         // time elapsed is set when the unit slept for 20 seconds
-        if (exec_main_loop_counter >= TICKS_PER_TREND || sysExecData.time_elapsed)
+        if (exec_main_loop_counter >= TICKS_PER_TREND || sysExecData.last_sleep_time)
         {
-            // zero the main loop counter
+            // up to 2 seconds elapsed since last action (sleep or awake) add to sleep time and
+            // clear the loop counter
+            sysExecData.last_sleep_time += exec_main_loop_counter/2;
             exec_main_loop_counter = 0;
 
             // only do water measurements when not sleeping
-            if (!sysExecData.time_elapsed)
+            if (sysExecData.last_sleep_time <= 2)
             {
                 temperature_loop_counter++;
 
@@ -300,6 +298,8 @@ void sysExec_exec(void)
                     debug_pour_total(sys_time, currentFlowRateInMLPerSec);
 #endif
                 }
+                else
+                    currentFlowRateInMLPerSec = 0;
 #else
                 currentFlowRateInMLPerSec = 0;
 #endif
@@ -307,9 +307,9 @@ void sysExec_exec(void)
             }
 
             // Record the water stats and initiate periodic communication
-            storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.time_elapsed);
+            storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.last_sleep_time);
             // prepare for next iteration of this loop to be sure water measurements are made
-            sysExecData.time_elapsed = 0;
+            sysExecData.last_sleep_time = 0;
 
 #ifndef WATER_DEBUG
             // Perform communication support - these run the state machines
@@ -388,6 +388,16 @@ void sysExec_exec(void)
                             sysExecData.sendSensorDataMessage = false;
                         }
                     }
+#ifdef SEND_DEBUG_TIME_DATA
+                    else if (sysExecData.sendTimeStamp)
+                    {
+                        if (mTestBaselineDone() && !dataMsgMgr_isSendMsgActive() && !mwBatchData.batchWriteActive)
+                        {
+                            sendTimeStampMsg();
+                            sysExecData.sendTimeStamp = false;
+                        }
+                    }
+#endif
 #endif
                 }
             }
@@ -405,7 +415,7 @@ void sysExec_exec(void)
 #endif
         } // every 4 clock ticks
 
-        sysExecData.time_elapsed = lowPowerMode_check(currentFlowRateInMLPerSec);  //every clock tick
+        sysExecData.last_sleep_time = lowPowerMode_check(currentFlowRateInMLPerSec);  //every clock tick
     } // end while 1
 }
 
@@ -651,11 +661,9 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
 {
     static volatile int blink_red = 0;
     uint8_t time_elapsed  = 0;
-    timePacket_t NowTime;
 
     if (sysExecData.dry_wake_time > 0)
     {
-
         // do not go to sleep if the modem is busy with updates or send test. or the gps is measuring
          if (sysExecData.send_test_result != SYSEXEC_SEND_TEST_RUNNING && !gps_isActive() && !modemMgr_isAllocated())
          {
@@ -695,26 +703,21 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                        timerA0_inter_sample_sleep();
                        // correct inaccuracy in RTC due to sleeping
                        // every 100 seconds (5*20), add 1 second
-                       if (sysExecData.sleep_count>=5)
+                       if (sysExecData.sleep_count>=5);
                        {
-                           incrementSeconds();
+                           all_timers_adjust_time(1);
                            sysExecData.sleep_count = 0;
                        }
                        // every 1020 seconds (51*20), add 3 seconds
                        if (sysExecData.sleep_alot>=51)
                        {
-                           incrementSeconds();
-                           incrementSeconds();
-                           incrementSeconds();
+                           all_timers_adjust_time(3);
                            sysExecData.sleep_alot = 0;
                        }
                        for (time_elapsed = 0; time_elapsed < 20; time_elapsed++)
                           incrementSeconds();
                        WATCHDOG_TICKLE();
-#ifdef WATER_DEBUG
-                       getBinTime(&NowTime);
-                       debug_RTC_time(&NowTime,'W');
-#endif
+
                        // this keeps the unit in "dry mode" without overflowing the counter (if dry a long time > 9 hours)
                        sysExecData.dry_count = sysExecData.dry_wake_time + 1;
                        time_elapsed = 20;
@@ -759,6 +762,22 @@ static void sendSensorDataMsg(void)
 
     dataMsgMgr_sendDataMsg(MSG_TYPE_SENSOR_DATA, payloadP, payloadSize);
 }
+#endif
+
+
+/**
+* \brief Initiate sending the Sensor Data Message
+*/
+#ifdef SEND_DEBUG_TIME_DATA
+#ifndef WATER_DEBUG
+static void sendTimeStampMsg(void)
+{
+    uint8_t *payloadP;
+    uint8_t payloadSize = storageMgr_getTimestampMessage(&payloadP);
+
+    dataMsgMgr_sendDataMsg(MSG_TYPE_TIMESTAMP, payloadP, payloadSize);
+}
+#endif
 #endif
 
 /**

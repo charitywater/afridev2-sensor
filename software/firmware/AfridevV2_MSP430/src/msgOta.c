@@ -1446,6 +1446,7 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
     // request 3 only needs a byte, but the word is there in case
     // we add another request
     uint16_t requestData = otaRespP->buf[5];
+    timePacket_t NowTime;
     bool error = false;
 
     requestData = (requestData << 8) + otaRespP->buf[4];
@@ -1464,6 +1465,11 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
         //"reject command" when out of spec
         if (requestData > 100)
             error = true;
+    }
+    else if (requestType == SENSOR_NOP_RESPONSE)
+    {
+        getBinTime(&NowTime);
+        requestData = time_util_RTC_hms(&NowTime);
     }
 
     // Prepare OTA response.  It will be sent after this function exits.

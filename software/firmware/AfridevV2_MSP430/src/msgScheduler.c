@@ -44,6 +44,7 @@ typedef struct msgSchedData_s {
     bool sendGpsLocation;                                  /**< Flag to indicate the GPS Location message is scheduled */
     bool performGpsMeasurement;                            /**< Flag to indicate the a GPS measurement is scheduled */
     bool sendSensorData;                                   /**< Flag to indicate that Sensor Data snapshot is scheduled */
+    bool sendTimeData;                                     /**< Flag to indicate that a Timestamp message is scheduled */
 } msgSchedData_t;
 
 /****************************
@@ -182,6 +183,15 @@ void msgSched_getNextMessageToTransmit(modemCmdWriteData_t *cmdWriteP)
         payloadMsgId = MSG_TYPE_SENSOR_DATA;
         msgSchedData.sendSensorData = false;
     }
+#ifdef SEND_DEBUG_TIME_DATA
+    else if (msgSchedData.sendTimeData)
+    {
+        // Retrieve the Water Sense debug data
+        payloadLength = storageMgr_getTimestampMessage(&payloadP);
+        payloadMsgId = MSG_TYPE_TIMESTAMP;
+        msgSchedData.sendTimeData = false;
+    }
+#endif
 
     // Initialize the command object
     cmdWriteP->cmd = OUTPOUR_M_COMMAND_SEND_DATA;
@@ -250,3 +260,12 @@ void msgSched_scheduleSensorDataMessage(void)
     msgSchedData.sendSensorData = true;
 }
 
+/**
+* \brief Schedule the transmission of a snapshot of the
+*        water sensing data
+*/
+void msgSched_scheduleTimeStampMessage(void)
+{
+    msgSchedData.msgScheduled = true;
+    msgSchedData.sendTimeData = true;
+}

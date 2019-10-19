@@ -38,7 +38,7 @@
 #define READ_WATER_BETWEEN_SLEEPS 1
 //#define NO_GPS_TEST 1
 #define SLEEP_DEBUG 1
-#define DISPLAY_ALL_PADDATA 1
+//#define DISPLAY_ALL_PADDATA 1
 #else
 #define WATERDETECT_READ_WATER_LEVEL_NORMAL 1
 #define READ_WATER_BETWEEN_SLEEPS 1
@@ -48,6 +48,7 @@
 #define DEBUG_DAILY_WATER_REPORTS 1
 //#define RED_FLAG_TEST 1
 //#define TRICKLE_VOLUME_ELIMINATE 1
+//#define SEND_DEBUG_TIME_DATA 1
 #endif
 /**
  * \def TICKS_PER_TREND
@@ -103,7 +104,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x0A
+#define FW_MINOR 0x0C
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -361,6 +362,7 @@ typedef struct sysExecData_s {
     bool sendSensorDataMessage :1;                         /**< flag specifying if a sensor data report is requested */
     bool sendSensorDataNow: 1;                             /**< flag specifying that water data is immediately reported over Modem */
     bool faultWaterDetect: 1;                              /**< flag specifying that water water or unknowns are stuck  */
+    bool sendTimeStamp: 1;                                 /**< flag specifying that the hourly time data needs to be sent */
     uint8_t waterDetectResets;                             /**< number of times the water detect algorithm data was cleared */
     uint8_t send_test_result;                              /**< result of sending the SEND_TEST message to the Modem */
     uint8_t led_on_time;                                   /**< number of iterations of the main loop that LED should remain on (2 sec resolution) */
@@ -369,7 +371,7 @@ typedef struct sysExecData_s {
     uint8_t rebootCountdownIsActive;                       /**< Specify if a reboot countdown sequence is in-progress */
     uint8_t noWaterMeasCount;                              /**< Maintain a count of sequential no water detected measurements */
     uint8_t waterMeasDelayCount;                           /**< Delay next water measurement count-down */
-    uint8_t time_elapsed;                                  /**< Time that the unit slept during low power mode check */
+    uint8_t last_sleep_time;                               /**< Time that the unit slept during low power mode check */
     uint8_t sleep_count;                                   /**< The number of consecutive sleeps to make accuracy adjustment */
     uint8_t sleep_alot;                                    /**< The longer number of consecutive sleeps to make additional clock adjustment */
     MANUF_STATE_T mtest_state;                             /**< Manufacturing test State */
@@ -404,13 +406,6 @@ void sysError(void);
 #endif
 
 extern sysExecData_t sysExecData;
-
-
-/*******************************************************************************
-*  time.c
-*******************************************************************************/
-void timerA0_inter_sample_sleep(void);
-void timerA0_20sec_sleep(void);
 
 /*******************************************************************************
 * Utils.c
@@ -839,6 +834,7 @@ typedef struct __attribute__((__packed__))timePacket_s {
 } timePacket_t;
 
 void timerA0_init(void);
+void all_timers_adjust_time(uint8_t adjustment);
 void getBinTime(timePacket_t *tpP);
 uint8_t bcd_to_char(uint8_t bcdValue);
 uint32_t getSecondsSinceBoot(void);
@@ -851,6 +847,9 @@ uint32_t getSecondsSinceBoot(void);
 // For testing, don't enable watchdog
 // #define WATCHDOG_TICKLE() (WDTCTL = WDTPW | WDTHOLD)
 
+void timerA0_inter_sample_sleep(void);
+void timerA0_20sec_sleep(void);
+uint16_t time_util_RTC_hms(timePacket_t *tp);
 
 /*******************************************************************************
 * manufStore.c
@@ -936,6 +935,62 @@ uint16_t manufRecord_getSensorDataMessage(uint8_t **payloadPP);
 /*******************************************************************************
 * storage.c
 *******************************************************************************/
+
+/**
+ * \typedef storageData_t
+ * \brief Define a container to hold data for the storage
+ *        module.
+ */
+typedef struct storageData_s {
+    uint16_t daysActivated;                                /**< Total days unit has been activated */
+    uint16_t minuteMilliliterSum;                          /**< Running milliliter sum for current minute */
+    uint32_t hourMilliliterSum;                            /**< Running milliliter sum for current hour */
+    uint32_t dayMilliliterSum;                             /**< Running milliliter sum for current day */
+    uint16_t activatedLiterSum;                            /**< Save the liter sum when activated */
+
+    uint8_t storageTime_seconds;                           /**< Current storage time - sec  */
+    uint8_t storageTime_minutes;                           /**< Current storage time - min */
+    uint8_t storageTime_hours;                             /**< Current storage time - hour */
+    uint8_t storageTime_dayOfWeek;                         /**< Current storage time - day */
+    uint8_t storageTime_week;                              /**< Current storage time - week */
+    uint8_t curWeeklyLogNum;                               /**< Current weekly flash log number we are storing to */
+
+    bool alignStorageFlag;                                 /**< True if time to align storage time */
+    uint8_t alignSecond;                                   /**< Time to align at - sec */
+    uint8_t alignMinute;                                   /**< Time to align at - min */
+    uint8_t alignHour24;                                   /**< Time to align at - hour */
+    int32_t alignSafetyCheckInSec;                         /**< Max time to wait for an align event */
+
+    bool redFlagCondition;                                 /**< flag for red flag condition */
+    uint8_t redFlagDayCount;                               /**< running count of red flag days */
+    uint8_t redFlagMapDay;                                 /**< used as index for red flag init mapping */
+    bool redFlagDataFullyPopulated;                        /**< true if redflag init mapping is completed */
+    uint16_t redFlagThreshTable[7];                        /**< store redFlag compare thresholds */
+
+    uint8_t transmissionRateInDays;                        /**< Specify how often to transmit data */
+    int8_t daysSinceLastTransmission;                      /**< Track number of days since last transmission */
+    bool sendData;                                         /**< True if ready to send water log data */
+    uint8_t startTxWeek;                                   /**< What week's log to start transmitting from */
+    uint8_t curTxWeek;                                     /**< What week's log we are currently transmitting */
+    uint8_t totalDailyLogsTransmitted;                     /**< Counter of total daily logs transmitted in current tx session */
+    bool haveSentDailyLogs;                                /**< Flag to indicate we have transmitted a daily log */
+
+} storageData_t;
+
+#ifdef SEND_DEBUG_TIME_DATA
+// this is the definition of the timestamp message payload
+typedef struct
+{
+    uint8_t ph[16];
+    uint32_t sys_time;  // 4 bytes
+    timePacket_t tp;    // 6 bytes
+    uint8_t storageTime_seconds;
+    uint8_t storageTime_minutes;
+    uint8_t storageTime_hours;
+    uint8_t unused;
+} storageTimeStamp_T;
+#endif
+
 void storageMgr_init(void);
 void storageMgr_exec(uint16_t currentFlowRateInSecML, uint8_t time_elapsed);
 void storageMgr_overrideUnitActivation(bool flag);
@@ -954,12 +1009,17 @@ uint8_t storageMgr_getStorageClockMinute(void);
 uint8_t storageMgr_prepareMsgHeader(uint8_t *dataPtr, uint8_t payloadMsgId);
 uint16_t storageMgr_getMonthlyCheckinMessage(uint8_t **payloadPP);
 uint16_t storageMgr_getActivatedMessage(uint8_t **payloadPP);
+#ifdef SEND_DEBUG_TIME_DATA
+uint16_t storageMgr_getTimestampMessage(uint8_t **payloadPP);
+#endif
 
 #ifdef DEBUG_DAILY_WATER_REPORTS
 #define STORAGE_TRANSMISSION_RATE_DEFAULT 1
 #else
 #define STORAGE_TRANSMISSION_RATE_DEFAULT 7
 #endif
+
+extern storageData_t stData;
 
 /*******************************************************************************
 * waterSense.c
@@ -1045,6 +1105,9 @@ void msgSched_scheduleMonthlyCheckInMessage(void);
 void msgSched_scheduleGpsLocationMessage(void);
 void msgSched_scheduleGpsMeasurement(void);
 void msgSched_scheduleSensorDataMessage(void);
+#ifdef SEND_DEBUG_TIME_DATA
+void msgSched_scheduleTimeStampMessage(void);
+#endif
 void msgSched_getNextMessageToTransmit(modemCmdWriteData_t *cmdWriteP);
 
 /*******************************************************************************

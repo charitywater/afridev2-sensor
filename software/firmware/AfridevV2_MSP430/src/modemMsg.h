@@ -18,11 +18,12 @@ typedef enum messageType {
     MSG_TYPE_OTAREPLY = 0x03,
     MSG_TYPE_RETRYBYTE = 0x04,
     MSG_TYPE_CHECKIN = 0x05,
-    MSG_TYPE_SOS = 0x23,
     MSG_TYPE_ACTIVATED = 0x07,
     MSG_TYPE_GPS_LOCATION = 0x08,
     MSG_TYPE_DAILY_LOG = 0x21,
     MSG_TYPE_SENSOR_DATA = 0x22,
+    MSG_TYPE_SOS = 0x23,	
+    MSG_TYPE_TIMESTAMP = 0x24,
     // this message type is an internal message (it will never be seen by the IOT server)
     MSG_TYPE_MODEM_SEND_TEST = 0x2F,
 

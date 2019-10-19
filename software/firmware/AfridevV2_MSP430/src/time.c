@@ -101,6 +101,20 @@ void timerA0_init(void)
 }
 
 /**
+* \brief adjust all the system's clocks with the same adjustment.  This is due to time loss when sleeping and waking
+* \ingroup PUBLIC_API
+*/
+void all_timers_adjust_time(uint8_t adjustment)
+{
+    uint8_t i;
+
+    seconds_since_boot += adjustment;
+    stData.storageTime_seconds += adjustment;
+    for (i=0; i<adjustment; i++)
+       incrementSeconds();
+}
+
+/**
 * \brief Set the timer interrupt frequency for low frequency samples
 * \ingroup PUBLIC_API
 */
@@ -244,5 +258,27 @@ uint8_t bcd_to_char(uint8_t bcdValue)
     uint8_t ones = bcdValue & 0x0f;
 
     return (tens + ones);
+}
+
+/**
+ * \brief Utility function to calculate a 2 byte time value that
+ * is in the format hour*256 + minutes
+ *
+ * @param *tp time value from RTC library
+ *
+ * @return uint16_t binary encoded time.
+ *
+ */
+uint16_t time_util_RTC_hms(timePacket_t *tp)
+{
+    uint16_t answer = 0xffff;
+
+    // validate the time value
+    if (tp)
+    {
+       if(tp->hour24 < 24 && tp->minute < 60)
+          answer = tp->hour24*256+tp->minute;
+    }
+    return (answer);
 }
 

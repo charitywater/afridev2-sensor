@@ -109,6 +109,9 @@ namespace cwtest
 
                 myDate = DateTime.ParseExact(date_s, "yyyy-MM-dd HH:mm:ss",
                                        System.Globalization.CultureInfo.InvariantCulture);
+
+                textBoxCSVmonth.Text = month_s + '/' + day_s + '/' + year_s;
+                textBoxCSVhour.Text = hour_s + ":" + minute_s + ":" + second_s;
             }
             else
                 myDate = DateTime.Now;
@@ -298,6 +301,50 @@ namespace cwtest
 
             return (lons);
         }
+
+        void parse_timestamp_message()
+        {
+            if (textBoxFA_Message.Text.Length >= 58)
+            {
+                string systimes = textBoxFA_Message.Text.Substring(38, 2) + textBoxFA_Message.Text.Substring(36, 2) + textBoxFA_Message.Text.Substring(34, 2) + textBoxFA_Message.Text.Substring(32, 2);
+                int systime = int.Parse(systimes, System.Globalization.NumberStyles.HexNumber);
+                int sys_day = systime / 86400;
+                systime -= sys_day * 86400;
+                int sys_hour = systime / 3600;
+                systime -= sys_hour * 3600;
+                int sys_min = systime / 60;
+                systime -= sys_min * 60;
+                int sys_sec = systime;
+                textBoxTimeSysTime.Text = Convert.ToString(sys_hour) + ":" + Convert.ToString(sys_min) + ":" + Convert.ToString(sys_sec);
+                string secs = textBoxFA_Message.Text.Substring(40, 2);
+                string mins = textBoxFA_Message.Text.Substring(42, 2);
+                string hours = textBoxFA_Message.Text.Substring(44, 2);
+                string days = textBoxFA_Message.Text.Substring(48, 2);
+                string mons = textBoxFA_Message.Text.Substring(46, 2);
+                string years = textBoxFA_Message.Text.Substring(50, 2);
+                int sec = int.Parse(secs, System.Globalization.NumberStyles.HexNumber);
+                int min = int.Parse(mins, System.Globalization.NumberStyles.HexNumber);
+                int hour = int.Parse(hours, System.Globalization.NumberStyles.HexNumber);
+                int day = int.Parse(days, System.Globalization.NumberStyles.HexNumber);
+                int mon = int.Parse(mons, System.Globalization.NumberStyles.HexNumber);
+                int year = int.Parse(years, System.Globalization.NumberStyles.HexNumber);
+                textBoxTimeRTC.Text = Convert.ToString(hour) + ":" + Convert.ToString(min) + ":" + Convert.ToString(sec) + " " + Convert.ToString(day) + "/" + Convert.ToString(mon) + "/" + Convert.ToString(year);
+                string st_secs = textBoxFA_Message.Text.Substring(52, 2);
+                string st_mins = textBoxFA_Message.Text.Substring(54, 2);
+                string st_hours = textBoxFA_Message.Text.Substring(56, 2);
+                int st_sec = int.Parse(st_secs, System.Globalization.NumberStyles.HexNumber);
+                int st_min = int.Parse(st_mins, System.Globalization.NumberStyles.HexNumber);
+                int st_hour = int.Parse(st_hours, System.Globalization.NumberStyles.HexNumber);
+                textBoxTimeStorage.Text = Convert.ToString(st_hour) + ":" + Convert.ToString(st_min) + ":" + Convert.ToString(st_sec);
+            }
+            else
+            {
+                textBoxTimeSysTime.Text = "";
+                textBoxTimeStorage.Text = "";
+                textBoxTimeRTC.Text = "";
+            }
+        }
+
         void parse_sos_message()
         {
             if (textBoxFA_Message.Text.Length >= 48)
@@ -807,10 +854,23 @@ namespace cwtest
             textBoxSDwaterResets.Text = Convert.ToString(water_reset);
             textBoxSDtrickleVol.Text = Convert.ToString(trickle_vol);
 
+            int cairdev0 = target_air0 - last_mean0;
+            textBoxAirDev0.Text = Convert.ToString(cairdev0);
+            int cairdev1 = target_air1 - last_mean1;
+            textBoxAirDev1.Text = Convert.ToString(cairdev1);
+            int cairdev2 = target_air2 - last_mean2;
+            textBoxAirDev2.Text = Convert.ToString(cairdev2);
+            int cairdev3 = target_air3 - last_mean3;
+            textBoxAirDev3.Text = Convert.ToString(cairdev3);
+            int cairdev4 = target_air4 - last_mean4;
+            textBoxAirDev4.Text = Convert.ToString(cairdev4);
+            int cairdev5 = target_air5 - last_mean5;
+            textBoxAirDev5.Text = Convert.ToString(cairdev5);
+
             // build csv string for excel sheet analysis
             textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
-            textBoxCSVstring.Text = textBoxCSVstring.Text + "0,0,0,0,0,0,";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxAirDev0.Text + ","+textBoxAirDev1.Text + ","+textBoxAirDev2.Text + ","+textBoxAirDev3.Text + ","+textBoxAirDev4.Text + ","+textBoxAirDev5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDlastMean0.Text + "," + textBoxSDlastMean1.Text + "," + textBoxSDlastMean2.Text + "," + textBoxSDlastMean3.Text + "," + textBoxSDlastMean4.Text + "," + textBoxSDlastMean5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDwaterTarg0.Text + "," + textBoxSDwaterTarg1.Text + "," + textBoxSDwaterTarg2.Text + "," + textBoxSDwaterTarg3.Text + "," + textBoxSDwaterTarg4.Text + "," + textBoxSDwaterTarg5.Text + ",";
             if (textBoxSDtotalVol.Text.Length > 3)
@@ -940,6 +1000,9 @@ namespace cwtest
                     case 6: //sos message
                     case 35:
                         parse_sos_message();
+                        break;
+                    case 36:
+                        parse_timestamp_message();
                         break;
                     case 7: // activated
                         parse_activated_message();
@@ -1135,6 +1198,16 @@ namespace cwtest
         {
             parse_sensor_data_message();
             this.Refresh();
+        }
+
+        private void TextBoxSDairDev0_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

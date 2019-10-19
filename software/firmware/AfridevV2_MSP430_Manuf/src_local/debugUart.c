@@ -534,30 +534,75 @@ void debug_pour_total(uint32_t sys_time, uint32_t total_pour)
 	}
 }
 
-void debug_RTC_time(timePacket_t *tp, uint8_t marker)
+uint8_t debug_getRTCdata(uint8_t *dest, timePacket_t *tp, uint8_t marker, storageData_t *store_time, uint32_t sys_time)
+{
+    uint8_t dbg_len = 0;
+    uint32_t days, hours;
+    uint16_t minutes, seconds;
+
+    dest[dbg_len++]='R';
+    dest[dbg_len++]=marker;
+    dest[dbg_len++]=(tp->month/10)+'0';
+    dest[dbg_len++]=(tp->month%10)+'0';
+    dest[dbg_len++]='/';
+    dest[dbg_len++]=(tp->day/10)+'0';
+    dest[dbg_len++]=(tp->day%10)+'0';
+    dest[dbg_len++]='/';
+    dest[dbg_len++]=(tp->year/10)+'0';
+    dest[dbg_len++]=(tp->year%10)+'0';
+    dest[dbg_len++]=' ';
+    dest[dbg_len++]=(tp->hour24/10)+'0';
+    dest[dbg_len++]=(tp->hour24%10)+'0';
+    dest[dbg_len++]=':';
+    dest[dbg_len++]=(tp->minute/10)+'0';
+    dest[dbg_len++]=(tp->minute%10)+'0';
+    dest[dbg_len++]=':';
+    dest[dbg_len++]=(tp->second/10)+'0';
+    dest[dbg_len++]=(tp->second%10)+'0';
+    if (store_time)
+    {
+        dest[dbg_len++]=' ';
+        dest[dbg_len++]='S';
+        dest[dbg_len++]=(store_time->storageTime_hours/10)+'0';
+        dest[dbg_len++]=(store_time->storageTime_hours%10)+'0';
+        dest[dbg_len++]=':';
+        dest[dbg_len++]=(store_time->storageTime_minutes/10)+'0';
+        dest[dbg_len++]=(store_time->storageTime_minutes%10)+'0';
+        dest[dbg_len++]=':';
+        dest[dbg_len++]=(store_time->storageTime_seconds/10)+'0';
+        dest[dbg_len++]=(store_time->storageTime_seconds%10)+'0';
+    }
+    dest[dbg_len++]=' ';
+    dest[dbg_len++]='T';
+
+    days = sys_time/86400l;
+    sys_time -= days*86400l;
+    hours = sys_time/3600;
+    sys_time -= hours*3600;
+    minutes = sys_time/60;
+    sys_time -= minutes * 60;
+    seconds = sys_time;
+    //dest[dbg_len++]=(days/10)+'0';
+    //dest[dbg_len++]=(days%10)+'0';
+    //dest[dbg_len++]='d';
+    dest[dbg_len++]=(hours/10)+'0';
+    dest[dbg_len++]=(hours%10)+'0';
+    dest[dbg_len++]=':';
+    dest[dbg_len++]=(minutes/10)+'0';
+    dest[dbg_len++]=(minutes%10)+'0';
+    dest[dbg_len++]=':';
+    dest[dbg_len++]=(seconds/10)+'0';
+    dest[dbg_len++]=(seconds%10)+'0';
+    dest[dbg_len++]='\n';
+
+    return (dbg_len);
+}
+
+void debug_RTC_time(timePacket_t *tp, uint8_t marker, storageData_t *store_time, uint32_t sys_time)
 {
     uint8_t dbg_len = 0;
 
-    dbg_line[dbg_len++]='#';
-    dbg_line[dbg_len++]=marker;
-    dbg_line[dbg_len++]=(tp->month/10)+'0';
-    dbg_line[dbg_len++]=(tp->month%10)+'0';
-    dbg_line[dbg_len++]='/';
-    dbg_line[dbg_len++]=(tp->day/10)+'0';
-    dbg_line[dbg_len++]=(tp->day%10)+'0';
-    dbg_line[dbg_len++]='/';
-    dbg_line[dbg_len++]=(tp->year/10)+'0';
-    dbg_line[dbg_len++]=(tp->year%10)+'0';
-    dbg_line[dbg_len++]=' ';
-    dbg_line[dbg_len++]=(tp->hour24/10)+'0';
-    dbg_line[dbg_len++]=(tp->hour24%10)+'0';
-    dbg_line[dbg_len++]=':';
-    dbg_line[dbg_len++]=(tp->minute/10)+'0';
-    dbg_line[dbg_len++]=(tp->minute%10)+'0';
-    dbg_line[dbg_len++]=':';
-    dbg_line[dbg_len++]=(tp->second/10)+'0';
-    dbg_line[dbg_len++]=(tp->second%10)+'0';
-    dbg_line[dbg_len++]='\n';
+    dbg_len = debug_getRTCdata(dbg_line, tp, marker, store_time, sys_time );
     dbg_uart_write(dbg_line, dbg_len);
 }
 

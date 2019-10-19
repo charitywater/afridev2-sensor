@@ -161,46 +161,6 @@ typedef struct weeklyLog_s {
     uint8_t clearOnReady[7];                               /**< Byte cleared for day when log ready to send */
 } weeklyLog_t;
 
-/**
- * \typedef storageData_t 
- * \brief Define a container to hold data for the storage 
- *        module.
- */
-typedef struct storageData_s {
-    uint16_t daysActivated;                                /**< Total days unit has been activated */
-    uint16_t minuteMilliliterSum;                          /**< Running milliliter sum for current minute */
-    uint32_t hourMilliliterSum;                            /**< Running milliliter sum for current hour */
-    uint32_t dayMilliliterSum;                             /**< Running milliliter sum for current day */
-    uint16_t activatedLiterSum;                            /**< Save the liter sum when activated */
-
-    uint8_t storageTime_seconds;                           /**< Current storage time - sec  */
-    uint8_t storageTime_minutes;                           /**< Current storage time - min */
-    uint8_t storageTime_hours;                             /**< Current storage time - hour */
-    uint8_t storageTime_dayOfWeek;                         /**< Current storage time - day */
-    uint8_t storageTime_week;                              /**< Current storage time - week */
-    uint8_t curWeeklyLogNum;                               /**< Current weekly flash log number we are storing to */
-
-    bool alignStorageFlag;                                 /**< True if time to align storage time */
-    uint8_t alignSecond;                                   /**< Time to align at - sec */
-    uint8_t alignMinute;                                   /**< Time to align at - min */
-    uint8_t alignHour24;                                   /**< Time to align at - hour */
-    int32_t alignSafetyCheckInSec;                         /**< Max time to wait for an align event */
-
-    bool redFlagCondition;                                 /**< flag for red flag condition */
-    uint8_t redFlagDayCount;                               /**< running count of red flag days */
-    uint8_t redFlagMapDay;                                 /**< used as index for red flag init mapping */
-    bool redFlagDataFullyPopulated;                        /**< true if redflag init mapping is completed */
-    uint16_t redFlagThreshTable[7];                        /**< store redFlag compare thresholds */
-
-    uint8_t transmissionRateInDays;                        /**< Specify how often to transmit data */
-    int8_t daysSinceLastTransmission;                      /**< Track number of days since last transmission */
-    bool sendData;                                         /**< True if ready to send water log data */
-    uint8_t startTxWeek;                                   /**< What week's log to start transmitting from */
-    uint8_t curTxWeek;                                     /**< What week's log we are currently transmitting */
-    uint8_t totalDailyLogsTransmitted;                     /**< Counter of total daily logs transmitted in current tx session */
-    bool haveSentDailyLogs;                                /**< Flag to indicate we have transmitted a daily log */
-
-} storageData_t;
 
 /****************************
  * Module Data Declarations
@@ -238,7 +198,6 @@ static const weeklyLog_t *weeklyLogAddrTable[] = {
  * \var stData 
  * \brief Declare the module data container 
  */
-// static
 storageData_t stData;
 
 /********************* 
@@ -310,12 +269,6 @@ void storageMgr_init(void)
 */
 void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 {
-    uint8_t time_change;
-
-    if (time_elapsed)
-       time_change = time_elapsed;
-    else
-       time_change = SECONDS_PER_TREND;
 
     // If we are waiting for an alignment event to occur, see if there
     // is a match (GMT time == alignment time).
@@ -324,7 +277,7 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
         // Decrement our safety down counter.
         // We use a safety down-counter to make sure that we don't wait more
         // than 24 hours for the alignment event to occur.
-        stData.alignSafetyCheckInSec -= time_change;
+        stData.alignSafetyCheckInSec -= time_elapsed;
         if (doesAlignTimeMatch() || (stData.alignSafetyCheckInSec < 0))
         {
             // If the current time is equal to the storage offset,
@@ -352,24 +305,39 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 
     // Note: this function is called every two seconds by the main loop.
     // unless we were in sleep mode
-    stData.storageTime_seconds += time_change;
-
+    stData.storageTime_seconds += time_elapsed;
 
     if (stData.storageTime_seconds >= TOTAL_SECONDS_IN_A_MINUTE)
     {
-        // Record data
-        recordLastMinute();
         // Update time
         stData.storageTime_minutes++;
         stData.storageTime_seconds -= TOTAL_SECONDS_IN_A_MINUTE;
+
+        // Record data
+        recordLastMinute();
     }
+#ifdef WATER_DEBUG
+    // signal a wakeup if it is not on a minute boundary
+    else if (time_elapsed > 2)
+    {
+        timePacket_t NowTime;
+        uint32_t sys_time = getSecondsSinceBoot();
+
+        getBinTime(&NowTime);
+        debug_RTC_time(&NowTime,'W',&stData, sys_time);
+    }
+#endif
     if (stData.storageTime_minutes >= TOTAL_MINUTES_IN_A_HOUR)
     {
-        // Record data
-        recordLastHour();
         // Update time
         stData.storageTime_hours++;
         stData.storageTime_minutes -= TOTAL_MINUTES_IN_A_HOUR;
+
+        // Record data
+        recordLastHour();
+#ifdef SEND_DEBUG_TIME_DATA
+        sysExecData.sendTimeStamp = true;
+#endif
     }
     if (stData.storageTime_hours >= TOTAL_HOURS_IN_A_DAY)
     {
@@ -912,12 +880,12 @@ static void recordLastMinute(void)
         timePacket_t NowTime;
 
         // debug messages are selected/deselected in debugUart.h
-        //uint32_t sys_time = getSecondsSinceBoot();
+        uint32_t sys_time = getSecondsSinceBoot();
 
         //debug_logSummary('M', sys_time, stData.storageTime_hours, stData.minuteMilliliterSum, stData.hourMilliliterSum);
 
         getBinTime(&NowTime);
-        debug_RTC_time(&NowTime,'M');
+        debug_RTC_time(&NowTime,'M',&stData, sys_time);
     }
 #endif
     stData.minuteMilliliterSum = 0;
@@ -1502,3 +1470,27 @@ static void clearAlignStats(void)
     stData.dayMilliliterSum = 0;
 }
 
+#ifdef SEND_DEBUG_TIME_DATA
+uint16_t storageMgr_getTimestampMessage(uint8_t **payloadPP)
+{
+    // Get the shared buffer (we borrow the ota buffer)
+    storageTimeStamp_T *ptr = (storageTimeStamp_T *)modemMgr_getSharedBuffer();
+
+    // Fill in the buffer with the standard message header
+    storageMgr_prepareMsgHeader(ptr->ph, MSG_TYPE_TIMESTAMP);
+
+    // Return sensor data
+    getBinTime(&ptr->tp);
+    ptr->storageTime_seconds = stData.storageTime_seconds;
+    ptr->storageTime_minutes = stData.storageTime_minutes;
+    ptr->storageTime_hours = stData.storageTime_hours;
+    ptr->sys_time = getSecondsSinceBoot();
+    ptr->unused = 0;
+
+    // Assign pointer
+    *payloadPP = (uint8_t*)ptr;
+
+    // return payload size
+    return (sizeof(storageTimeStamp_T));
+}
+#endif
