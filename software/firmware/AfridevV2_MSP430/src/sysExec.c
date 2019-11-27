@@ -166,6 +166,7 @@ void sysExec_exec(void)
     // Set how long to wait until first startup message should be transmitted
     sysExecData.secondsTillStartUpMsgTx = START_UP_MSG_TX_DELAY_IN_SECONDS;
     sysExecData.dry_wake_time = SYSEXEC_NO_WATER_SLEEP_DELAY;
+    sysExecData.margin_limit = SYSEXEC_MARGIN_LIMIT;
 
     // Initialize the date for Jan 1, 2018
     // h, m, s, am/pm (must be in BCD)
@@ -702,14 +703,14 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                        hal_low_power_enter();
                        timerA0_inter_sample_sleep();
                        // correct inaccuracy in RTC due to sleeping
-                       // every 100 seconds (5*20), add 1 second
-                       if (sysExecData.sleep_count>=5);
+                       // every 160 seconds (8*20), add 2 seconds
+                       if (sysExecData.sleep_count>=8);
                        {
-                           all_timers_adjust_time(1);
+                           all_timers_adjust_time(2);
                            sysExecData.sleep_count = 0;
                        }
-                       // every 1020 seconds (51*20), add 3 seconds
-                       if (sysExecData.sleep_alot>=51)
+                       // every 1200 seconds (60*20), add 3 seconds
+                       if (sysExecData.sleep_alot>=60)
                        {
                            all_timers_adjust_time(3);
                            sysExecData.sleep_alot = 0;

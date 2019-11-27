@@ -629,7 +629,19 @@ void midpoint_analysis(Pad_Data_t *pad_data)
 #else
         if (target_width > SAMPLE_MIN_STATE_JUMP)
 #endif
+        {
+            // capture any changes to the margin calculations
+            if (pad_data->pad.min_margin)
             {
+                if (target_width < pad_data->pad.min_margin )
+                    pad_data->pad.min_margin = target_width;
+            }
+            else
+                pad_data->pad.min_margin = target_width;
+
+            if (target_width > pad_data->pad.max_margin )
+                pad_data->pad.max_margin = target_width;
+
                 target_midpoint = pad_data->pad.target_water + (target_width / 2);
 
                 if (pad_data->mean >= target_midpoint)
@@ -659,6 +671,36 @@ void midpoint_analysis(Pad_Data_t *pad_data)
     }
 }
 
+/**
+* \brief This function calculates the margin growth score for the current water under measurement.   Water that
+*        has changes in sediment levels will cause the margin between air and water to grow.  There is no way to
+*        measure sediment levels, so the air and water targets can not be adjusted was the levels change.  The
+*        increase of difference between air and water targets will cause the algorithm to falsely detect water.
+*        The measure here is the mean difference between air and water targets for active pads.   The pads must have
+*        a state of A, a, W, or w to be included in the measure
+*
+* \ingroup PUBLIC_API
+*/
+uint16_t waterDetect_get_margin_growth(void)
+{
+    uint8_t i;
+    uint8_t num_samp = 0;
+    uint16_t total_margin = 0;
+
+    for (i=0; i< NUM_PADS; i++)
+    {
+        if (pad_db[i].pad.state != '?')
+        {
+            total_margin += pad_db[i].pad.max_margin - pad_db[i].pad.min_margin;
+            num_samp++;
+        }
+    }
+    if (num_samp)
+    {
+        total_margin /= num_samp;
+    }
+    return (total_margin);
+}
 
 /**
 * \brief This function reviews the means of the last second's sample data for all pads to detect
@@ -952,6 +994,22 @@ uint16_t waterDetect_get_flow_rate(uint8_t level, uint8_t *percentile)
     }
     else
         *percentile = 0;
+
+#ifdef MARGIN_LIMIT_CHECKS
+
+    sysExecData.waterDetectStopped = false;
+    if (sysExecData.margin_limit)
+    {
+        uint16_t growth = waterDetect_get_margin_growth();
+
+        // this shuts off water detection when the potential of water_stuck is great
+        if ( growth > sysExecData.margin_limit)
+        {
+		    sysExecData.waterDetectStopped = true;
+            answer = 0;
+        }
+    }
+#endif
 
     return (answer);
 }

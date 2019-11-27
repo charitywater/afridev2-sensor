@@ -1518,6 +1518,10 @@ static bool otaMsgMgr_getSensorData(otaResponse_t *otaRespP)
         case SENSOR_NOP_RESPONSE:
             // respond with NOP so the clock can be adjusted without a reset command
             break;
+        case SENSOR_MARGIN_GROW:
+            // set number of counts that margin may grow while operational
+            sysExecData.margin_limit = requestData;
+            break;
         default:
             // Invalid request type
             error = true;

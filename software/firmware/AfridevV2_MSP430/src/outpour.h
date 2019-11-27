@@ -45,10 +45,12 @@
 //#define SLEEP_DEBUG 1
 //#define DEBUG_BATTERY_TEST 1
 //#define DEBUG_SEND_SENSOR_DATA_NOW 1
-#define DEBUG_DAILY_WATER_REPORTS 1
+//#define DEBUG_DAILY_WATER_REPORTS 1
 //#define RED_FLAG_TEST 1
 //#define TRICKLE_VOLUME_ELIMINATE 1
 //#define SEND_DEBUG_TIME_DATA 1
+//#define MANUF_RESTORE_BASELINE_TARGETS
+//#define MARGIN_LIMIT_CHECKS 1
 #endif
 /**
  * \def TICKS_PER_TREND
@@ -97,14 +99,14 @@
  * \def FW_VERSION_MAJOR
  * \brief Specify the AfridevV2 firmware major version number.
  */
-#define FW_VERSION_MAJOR ((uint8_t)0x03)
+#define FW_VERSION_MAJOR ((uint8_t)0x04)
 
 /**
  * \def FW_VERSION_MINOR
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x0C
+#define FW_MINOR 0x00
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -353,6 +355,7 @@ typedef struct sysExecData_s {
     uint16_t downspout_rate;                               /**< Maximum downspout rate setting for tuning accuracy based on board thickness */
     uint16_t dry_count;                                    /**< Current number of consecutive trends with no water */
     uint16_t dry_wake_time;                                /**< Number of consecutive trends with no water before sleeping */
+    uint16_t margin_limit;                                 /**< Number of margin count difference between min and max for unit to be operational */
     bool FAMsgWasSent : 1;                                 /**< Flag specifying if Final Assembly msg was sent */
     bool mCheckInMsgWasSent : 1;                           /**< Flag specifying if Monthly Check In msg was sent */
     bool appRecordWasSet: 1;                               /**< Flag specifying if App record was set */
@@ -363,6 +366,7 @@ typedef struct sysExecData_s {
     bool sendSensorDataNow: 1;                             /**< flag specifying that water data is immediately reported over Modem */
     bool faultWaterDetect: 1;                              /**< flag specifying that water water or unknowns are stuck  */
     bool sendTimeStamp: 1;                                 /**< flag specifying that the hourly time data needs to be sent */
+    bool waterDetectStopped: 1;                            /**< flag specifying that water detection has been stopped */
     uint8_t waterDetectResets;                             /**< number of times the water detect algorithm data was cleared */
     uint8_t send_test_result;                              /**< result of sending the SEND_TEST message to the Modem */
     uint8_t led_on_time;                                   /**< number of iterations of the main loop that LED should remain on (2 sec resolution) */
@@ -403,6 +407,12 @@ void sysError(void);
 #else
 #define SYSEXEC_NO_WATER_SLEEP_DELAY 60
 #endif
+#endif
+
+#ifdef MARGIN_LIMIT_CHECKS
+#define SYSEXEC_MARGIN_LIMIT 400
+#else
+#define SYSEXEC_MARGIN_LIMIT 65535
 #endif
 
 extern sysExecData_t sysExecData;
@@ -547,7 +557,7 @@ typedef struct Water_Data_s {
     uint8_t pad4[9];                                       /**< current pad4 capacitance value OR current air deviation*/
     uint8_t pad5[9];                                       /**< current pad5 capacitance value OR current air deviation*/
     uint8_t level[2];                                      /**< current water level detected L1 to L6 */
-    uint8_t flow[15];                                      /**< current water flow estimate for last 2 seconds in ml */
+    uint8_t flow[20];                                      /**< current water flow estimate for last 2 seconds in ml */
     uint8_t zero;                                          /**< end of string, always zero */
 } Water_Data_t;
 
@@ -741,6 +751,7 @@ bool otaMsgMgr_isOtaProcessingDone(void);
 #define SENSOR_SET_WATER_LIMIT 6
 #define SENSOR_SET_WAKE_TIME 7
 #define SENSOR_NOP_RESPONSE 8
+#define SENSOR_MARGIN_GROW 9
 
 /*******************************************************************************
 * msgOtaUpgrade.c

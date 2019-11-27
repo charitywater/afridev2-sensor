@@ -231,7 +231,7 @@ static int debug_level(uint8_t *dest, uint8_t level)
     return (i);
 }
 
-static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns, uint16_t trickleVol)
+static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns, uint16_t trickleVol, uint16_t margin_g)
 {
     uint8_t i = 0;
     uint8_t percentile;
@@ -254,6 +254,19 @@ static int debug_flow_out(uint8_t *dest, uint8_t level, uint8_t unknowns, uint16
         dest[i++] = ((trickleVol / 100) % 10) + '0';
         dest[i++] = ((trickleVol / 10) % 10) + '0';
         dest[i++] = (trickleVol % 10) + '0';
+    }
+    else
+    {
+        dest[i++] = '?';
+        dest[i++] = '?';
+        dest[i++] = '?';
+    }
+    dest[i++] = sysExecData.waterDetectStopped?'X':'G';
+    if (margin_g != 0xFFFF)
+    {
+        dest[i++] = ((margin_g / 100) % 10) + '0';
+        dest[i++] = ((margin_g / 10) % 10) + '0';
+        dest[i++] = (margin_g % 10) + '0';
     }
     else
     {
@@ -342,7 +355,7 @@ static int debug_sample_out(uint8_t *dest, uint8_t pad_number)
 
 
 //called by waterSense.c
-void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline, uint16_t trickleVol)
+void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline, uint16_t trickleVol, uint16_t margin_growth)
 {
     uint8_t dbg_len = 0;
 
@@ -368,7 +381,7 @@ void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_
 			debug_pad_meas(water_report.pad4,4,baseline);
 			debug_pad_meas(water_report.pad5,5,baseline);
 			debug_level(water_report.level, level);
-			debug_flow_out(water_report.flow, level, unknowns, trickleVol );
+			debug_flow_out(water_report.flow, level, unknowns, trickleVol, margin_growth );
 			water_report.zero = 0;
 		    memcpy(&dbg_line[0],&water_report,sizeof(Water_Data_t));
 		    dbg_len += sizeof(Water_Data_t);

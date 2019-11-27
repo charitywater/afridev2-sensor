@@ -121,7 +121,7 @@ typedef struct __attribute__((__packed__))dailyLog_s {
     uint16_t totalLiters;                                  /**< 02, 48-49 */
     uint16_t averageLiters;                                /**< 02, 50-51 */
     uint8_t redFlag;                                       /**< 01, 52    */
-    uint8_t reserverd;                                     /**< 01, 53    */
+    uint8_t outOfSpec;                                     /**< 01, 53    */
     uint16_t unknowns;                                     /**< 02, 54-55 */
     uint16_t padSubmergedCount[6];                         /**< 12, 56-67 */
 } dailyLog_t;
@@ -1054,6 +1054,7 @@ static void writeStatsToDailyLog(void)
     uint8_t *addr;
     uint16_t i = 0;
     uint16_t u16Val;
+    uint8_t u8Val;
 
     // Get pointer to today's dailyLog in flash.
     dailyLog_t *dailyLogsP = getDailyLogAddr(stData.curWeeklyLogNum, stData.storageTime_dayOfWeek);
@@ -1064,12 +1065,15 @@ static void writeStatsToDailyLog(void)
         addr = (uint8_t *)&(dailyLogsP->padSubmergedCount[i]);
         u16Val = waterSense_getPadStatsSubmerged((padId_t)i);
         msp430Flash_write_int16(addr, u16Val);
-
     }
     // Write unknown stat to flash
     addr = (uint8_t *)&(dailyLogsP->unknowns);
     u16Val = waterSense_getPadStatsUnknowns();
     msp430Flash_write_int16(addr, u16Val);
+
+    // Write outOfSpec status to flash
+    u8Val = sysExecData.waterDetectStopped;
+    msp430Flash_write_bytes((uint8_t *)&(dailyLogsP->outOfSpec), (uint8_t *)&u8Val, FLASH_WRITE_ONE_BYTE);
 
     // Clear all the pad statistics
     waterSense_clearStats();

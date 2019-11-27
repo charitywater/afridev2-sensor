@@ -712,6 +712,8 @@ namespace cwtest
             textBoxSDairTemp0.Text = Convert.ToString(podtemp_air0);
             textBoxSDwaterTarg0.Text = Convert.ToString(target_water0);
             textBoxSDwaterTemp0.Text = Convert.ToString(podtemp_water0);
+            textBoxMarginMin0.Text = "n/a";
+            textBoxMarginMax0.Text = "n/a";
             textBoxSDstate0.Text = pad_state(state0);
 
             string last_means1 = textBoxFA_Message.Text.Substring(116, 4);
@@ -735,6 +737,8 @@ namespace cwtest
             textBoxSDairTemp1.Text = Convert.ToString(podtemp_air1);
             textBoxSDwaterTarg1.Text = Convert.ToString(target_water1);
             textBoxSDwaterTemp1.Text = Convert.ToString(podtemp_water1);
+            textBoxMarginMin1.Text = "n/a";
+            textBoxMarginMax1.Text = "n/a";
             textBoxSDstate1.Text = pad_state(state1);
 
             string last_means2 = textBoxFA_Message.Text.Substring(140, 4);
@@ -758,6 +762,8 @@ namespace cwtest
             textBoxSDairTemp2.Text = Convert.ToString(podtemp_air2);
             textBoxSDwaterTarg2.Text = Convert.ToString(target_water2);
             textBoxSDwaterTemp2.Text = Convert.ToString(podtemp_water2);
+            textBoxMarginMin2.Text = "n/a";
+            textBoxMarginMax2.Text = "n/a";
             textBoxSDstate2.Text = pad_state(state2);
 
             string last_means3 = textBoxFA_Message.Text.Substring(164, 4);
@@ -781,6 +787,8 @@ namespace cwtest
             textBoxSDairTemp3.Text = Convert.ToString(podtemp_air3);
             textBoxSDwaterTarg3.Text = Convert.ToString(target_water3);
             textBoxSDwaterTemp3.Text = Convert.ToString(podtemp_water3);
+            textBoxMarginMin3.Text = "n/a";
+            textBoxMarginMax3.Text = "n/a";
             textBoxSDstate3.Text = pad_state(state3);
 
             string last_means4 = textBoxFA_Message.Text.Substring(188, 4);
@@ -804,6 +812,8 @@ namespace cwtest
             textBoxSDairTemp4.Text = Convert.ToString(podtemp_air4);
             textBoxSDwaterTarg4.Text = Convert.ToString(target_water4);
             textBoxSDwaterTemp4.Text = Convert.ToString(podtemp_water4);
+            textBoxMarginMin4.Text = "n/a";
+            textBoxMarginMax4.Text = "n/a";
             textBoxSDstate4.Text = pad_state(state4);
 
 
@@ -828,6 +838,8 @@ namespace cwtest
             textBoxSDairTemp5.Text = Convert.ToString(podtemp_air5);
             textBoxSDwaterTarg5.Text = Convert.ToString(target_water5);
             textBoxSDwaterTemp5.Text = Convert.ToString(podtemp_water5);
+            textBoxMarginMin5.Text = "n/a";
+            textBoxMarginMax5.Text = "n/a";
             textBoxSDstate5.Text = pad_state(state5);
 
             string unknown_limits = textBoxFA_Message.Text.Substring(236, 4);
@@ -845,11 +857,13 @@ namespace cwtest
             string trickle_vols = "????";
             if (textBoxFA_Message.Text.Length >= 260)
                 trickle_vols = textBoxFA_Message.Text.Substring(256, 4);
+
             int water_limit = int.Parse(big_endian(water_limits), System.Globalization.NumberStyles.HexNumber);
             int water_reset = int.Parse(big_endian(water_resets), System.Globalization.NumberStyles.HexNumber);
             int trickle_vol = 0;
             if (textBoxFA_Message.Text.Length >= 260)
                 trickle_vol = int.Parse(big_endian(trickle_vols), System.Globalization.NumberStyles.HexNumber);
+
             textBoxSDWaterLim.Text = Convert.ToString(water_limit);
             textBoxSDwaterResets.Text = Convert.ToString(water_reset);
             textBoxSDtrickleVol.Text = Convert.ToString(trickle_vol);
@@ -867,12 +881,27 @@ namespace cwtest
             int cairdev5 = target_air5 - last_mean5;
             textBoxAirDev5.Text = Convert.ToString(cairdev5);
 
+            int cmargin0 = target_air0 - target_water0;
+            textBoxMargin0.Text = Convert.ToString(cmargin0);
+            int cmargin1 = target_air1 - target_water1;
+            textBoxMargin1.Text = Convert.ToString(cmargin1);
+            int cmargin2 = target_air2 - target_water2;
+            textBoxMargin2.Text = Convert.ToString(cmargin2);
+            int cmargin3 = target_air3 - target_water3;
+            textBoxMargin3.Text = Convert.ToString(cmargin3);
+            int cmargin4 = target_air4 - target_water4;
+            textBoxMargin4.Text = Convert.ToString(cmargin4);
+            int cmargin5 = target_air5 - target_water5;
+            textBoxMargin5.Text = Convert.ToString(cmargin5);
+
+
             // build csv string for excel sheet analysis
             textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxAirDev0.Text + ","+textBoxAirDev1.Text + ","+textBoxAirDev2.Text + ","+textBoxAirDev3.Text + ","+textBoxAirDev4.Text + ","+textBoxAirDev5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDlastMean0.Text + "," + textBoxSDlastMean1.Text + "," + textBoxSDlastMean2.Text + "," + textBoxSDlastMean3.Text + "," + textBoxSDlastMean4.Text + "," + textBoxSDlastMean5.Text + ",";
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDwaterTarg0.Text + "," + textBoxSDwaterTarg1.Text + "," + textBoxSDwaterTarg2.Text + "," + textBoxSDwaterTarg3.Text + "," + textBoxSDwaterTarg4.Text + "," + textBoxSDwaterTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxMargin0.Text + "," + textBoxMargin1.Text + "," + textBoxMargin2.Text + "," + textBoxMargin3.Text + "," + textBoxMargin4.Text + "," + textBoxMargin5.Text + ",";
             if (textBoxSDtotalVol.Text.Length > 3)
                 textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtotalVol.Text.Substring(0, textBoxSDtotalVol.Text.Length - 3) + "." + textBoxSDtotalVol.Text.Substring(textBoxSDtotalVol.Text.Length - 3, 3) + ",";
             else if (textBoxSDtotalVol.Text.Length > 2)
@@ -891,7 +920,313 @@ namespace cwtest
             textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtrickleVol.Text;
         }
 
+        void parse_new_sensor_data_message()
+        {
+            string bl0s = textBoxFA_Message.Text.Substring(32, 4);
+            int bl0 = int.Parse(big_endian(bl0s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL0.Text = Convert.ToString(bl0);
+            string bl1s = textBoxFA_Message.Text.Substring(36, 4);
+            int bl1 = int.Parse(big_endian(bl1s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL1.Text = Convert.ToString(bl1);
+            string bl2s = textBoxFA_Message.Text.Substring(40, 4);
+            int bl2 = int.Parse(big_endian(bl2s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL2.Text = Convert.ToString(bl2);
+            string bl3s = textBoxFA_Message.Text.Substring(44, 4);
+            int bl3 = int.Parse(big_endian(bl3s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL3.Text = Convert.ToString(bl3);
+            string bl4s = textBoxFA_Message.Text.Substring(48, 4);
+            int bl4 = int.Parse(big_endian(bl4s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL4.Text = Convert.ToString(bl4);
+            string bl5s = textBoxFA_Message.Text.Substring(52, 4);
+            int bl5 = int.Parse(big_endian(bl5s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDpadBL5.Text = Convert.ToString(bl5);
 
+            string airdev0s = textBoxFA_Message.Text.Substring(56, 4);
+            int airdev0 = int.Parse(big_endian(airdev0s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev0.Text = Convert.ToString(airdev0);
+            string airdev1s = textBoxFA_Message.Text.Substring(60, 4);
+            int airdev1 = int.Parse(big_endian(airdev1s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev1.Text = Convert.ToString(airdev1);
+            string airdev2s = textBoxFA_Message.Text.Substring(64, 4);
+            int airdev2 = int.Parse(big_endian(airdev2s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev2.Text = Convert.ToString(airdev2);
+            string airdev3s = textBoxFA_Message.Text.Substring(68, 4);
+            int airdev3 = int.Parse(big_endian(airdev3s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev3.Text = Convert.ToString(airdev3);
+            string airdev4s = textBoxFA_Message.Text.Substring(72, 4);
+            int airdev4 = int.Parse(big_endian(airdev4s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev4.Text = Convert.ToString(airdev4);
+            string airdev5s = textBoxFA_Message.Text.Substring(76, 4);
+            int airdev5 = int.Parse(big_endian(airdev5s), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDairDev5.Text = Convert.ToString(airdev5);
+
+            string padTemps = textBoxFA_Message.Text.Substring(80, 4);
+            int padTemp = int.Parse(big_endian(padTemps), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDblTemp.Text = Convert.ToString(padTemp);
+
+            string currTemps = textBoxFA_Message.Text.Substring(84, 4);
+            int currTemp = int.Parse(big_endian(currTemps), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDCurTemp.Text = Convert.ToString(currTemp);
+
+            string seqUnks = textBoxFA_Message.Text.Substring(88, 4);
+            int seqUnk = int.Parse(big_endian(seqUnks), System.Globalization.NumberStyles.HexNumber);
+            textBoxSdseqUnk.Text = Convert.ToString(seqUnk);
+
+            string last_means0 = textBoxFA_Message.Text.Substring(92, 4);
+            string target_airs0 = textBoxFA_Message.Text.Substring(96, 4);
+            string podtemp_airs0 = textBoxFA_Message.Text.Substring(100, 4);
+            string target_waters0 = textBoxFA_Message.Text.Substring(104, 4);
+            string podtemp_waters0 = textBoxFA_Message.Text.Substring(108, 4);
+            string min_margs0 = textBoxFA_Message.Text.Substring(112, 4);
+            string max_margs0 = textBoxFA_Message.Text.Substring(116, 4);
+            string states0 = textBoxFA_Message.Text.Substring(120, 2);   //skipping uint8_t num_samp
+            int last_mean0 = int.Parse(big_endian(last_means0), System.Globalization.NumberStyles.HexNumber);
+            int target_air0 = int.Parse(big_endian(target_airs0), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air0 = int.Parse(big_endian(podtemp_airs0), System.Globalization.NumberStyles.HexNumber);
+            int target_water0 = int.Parse(big_endian(target_waters0), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water0 = int.Parse(big_endian(podtemp_waters0), System.Globalization.NumberStyles.HexNumber);
+            int min_marg0 = int.Parse(big_endian(min_margs0), System.Globalization.NumberStyles.HexNumber);
+            int max_marg0 = int.Parse(big_endian(max_margs0), System.Globalization.NumberStyles.HexNumber);
+            int state0 = int.Parse(states0, System.Globalization.NumberStyles.HexNumber);
+            int pct0 = prop_percent(target_air0, target_water0, last_mean0);
+            textBoxSDProp0.Text = Convert.ToString(pct0);
+            textBoxSDmidpoint0.Text = midpoint(target_air0, target_water0, last_mean0, state0);
+
+            textBoxSDlastMean0.Text = Convert.ToString(last_mean0);
+            textBoxSDairTarg0.Text = Convert.ToString(target_air0);
+            textBoxSDairTemp0.Text = Convert.ToString(podtemp_air0);
+            textBoxSDwaterTarg0.Text = Convert.ToString(target_water0);
+            textBoxSDwaterTemp0.Text = Convert.ToString(podtemp_water0);
+            textBoxMarginMin0.Text = Convert.ToString(min_marg0);
+            textBoxMarginMax0.Text = Convert.ToString(max_marg0);
+            textBoxSDstate0.Text = pad_state(state0);
+
+            string last_means1 = textBoxFA_Message.Text.Substring(124, 4);
+            string target_airs1 = textBoxFA_Message.Text.Substring(128, 4);
+            string podtemp_airs1 = textBoxFA_Message.Text.Substring(132, 4);
+            string target_waters1 = textBoxFA_Message.Text.Substring(136, 4);
+            string podtemp_waters1 = textBoxFA_Message.Text.Substring(140, 4);
+            string min_margs1 = textBoxFA_Message.Text.Substring(144, 4);
+            string max_margs1 = textBoxFA_Message.Text.Substring(148, 4);
+            string states1 = textBoxFA_Message.Text.Substring(152, 2);   //skipping uint8_t num_samp
+            int last_mean1 = int.Parse(big_endian(last_means1), System.Globalization.NumberStyles.HexNumber);
+            int target_air1 = int.Parse(big_endian(target_airs1), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air1 = int.Parse(big_endian(podtemp_airs1), System.Globalization.NumberStyles.HexNumber);
+            int target_water1 = int.Parse(big_endian(target_waters1), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water1 = int.Parse(big_endian(podtemp_waters1), System.Globalization.NumberStyles.HexNumber);
+            int min_marg1 = int.Parse(big_endian(min_margs1), System.Globalization.NumberStyles.HexNumber);
+            int max_marg1 = int.Parse(big_endian(max_margs1), System.Globalization.NumberStyles.HexNumber);
+            int state1 = int.Parse(states1, System.Globalization.NumberStyles.HexNumber);
+            int pct1 = prop_percent(target_air1, target_water1, last_mean1);
+            textBoxSDProp1.Text = Convert.ToString(pct1);
+            textBoxSDmidpoint1.Text = midpoint(target_air1, target_water1, last_mean1, state1);
+
+            textBoxSDlastMean1.Text = Convert.ToString(last_mean1);
+            textBoxSDairTarg1.Text = Convert.ToString(target_air1);
+            textBoxSDairTemp1.Text = Convert.ToString(podtemp_air1);
+            textBoxSDwaterTarg1.Text = Convert.ToString(target_water1);
+            textBoxSDwaterTemp1.Text = Convert.ToString(podtemp_water1);
+            textBoxMarginMin1.Text = Convert.ToString(min_marg1);
+            textBoxMarginMax1.Text = Convert.ToString(max_marg1);
+            textBoxSDstate1.Text = pad_state(state1);
+
+            string last_means2 = textBoxFA_Message.Text.Substring(156, 4);
+            string target_airs2 = textBoxFA_Message.Text.Substring(160, 4);
+            string podtemp_airs2 = textBoxFA_Message.Text.Substring(164, 4);
+            string target_waters2 = textBoxFA_Message.Text.Substring(168, 4);
+            string podtemp_waters2 = textBoxFA_Message.Text.Substring(172, 4);
+            string min_margs2 = textBoxFA_Message.Text.Substring(176, 4);
+            string max_margs2 = textBoxFA_Message.Text.Substring(180, 4);
+            string states2 = textBoxFA_Message.Text.Substring(184, 2);   //skipping uint8_t num_samp
+            int last_mean2 = int.Parse(big_endian(last_means2), System.Globalization.NumberStyles.HexNumber);
+            int target_air2 = int.Parse(big_endian(target_airs2), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air2 = int.Parse(big_endian(podtemp_airs2), System.Globalization.NumberStyles.HexNumber);
+            int target_water2 = int.Parse(big_endian(target_waters2), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water2 = int.Parse(big_endian(podtemp_waters2), System.Globalization.NumberStyles.HexNumber);
+            int min_marg2 = int.Parse(big_endian(min_margs2), System.Globalization.NumberStyles.HexNumber);
+            int max_marg2 = int.Parse(big_endian(max_margs2), System.Globalization.NumberStyles.HexNumber);
+            int state2 = int.Parse(states2, System.Globalization.NumberStyles.HexNumber);
+            int pct2 = prop_percent(target_air2, target_water2, last_mean2);
+            textBoxSDProp2.Text = Convert.ToString(pct2);
+            textBoxSDmidpoint2.Text = midpoint(target_air2, target_water2, last_mean2, state2);
+
+            textBoxSDlastMean2.Text = Convert.ToString(last_mean2);
+            textBoxSDairTarg2.Text = Convert.ToString(target_air2);
+            textBoxSDairTemp2.Text = Convert.ToString(podtemp_air2);
+            textBoxSDwaterTarg2.Text = Convert.ToString(target_water2);
+            textBoxSDwaterTemp2.Text = Convert.ToString(podtemp_water2);
+            textBoxMarginMin2.Text = Convert.ToString(min_marg2);
+            textBoxMarginMax2.Text = Convert.ToString(max_marg2);
+            textBoxSDstate2.Text = pad_state(state2);
+
+            string last_means3 = textBoxFA_Message.Text.Substring(188, 4);
+            string target_airs3 = textBoxFA_Message.Text.Substring(192, 4);
+            string podtemp_airs3 = textBoxFA_Message.Text.Substring(196, 4);
+            string target_waters3 = textBoxFA_Message.Text.Substring(200, 4);
+            string podtemp_waters3 = textBoxFA_Message.Text.Substring(204, 4);
+            string min_margs3 = textBoxFA_Message.Text.Substring(208, 4);
+            string max_margs3 = textBoxFA_Message.Text.Substring(212, 4);
+            string states3 = textBoxFA_Message.Text.Substring(216, 2);   //skipping uint8_t num_samp
+            int last_mean3 = int.Parse(big_endian(last_means3), System.Globalization.NumberStyles.HexNumber);
+            int target_air3 = int.Parse(big_endian(target_airs3), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air3 = int.Parse(big_endian(podtemp_airs3), System.Globalization.NumberStyles.HexNumber);
+            int target_water3 = int.Parse(big_endian(target_waters3), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water3 = int.Parse(big_endian(podtemp_waters3), System.Globalization.NumberStyles.HexNumber);
+            int min_marg3 = int.Parse(big_endian(min_margs3), System.Globalization.NumberStyles.HexNumber);
+            int max_marg3 = int.Parse(big_endian(max_margs3), System.Globalization.NumberStyles.HexNumber);
+            int state3 = int.Parse(states3, System.Globalization.NumberStyles.HexNumber);
+            int pct3 = prop_percent(target_air3, target_water3, last_mean3);
+            textBoxSDProp3.Text = Convert.ToString(pct3);
+            textBoxSDmidpoint3.Text = midpoint(target_air3, target_water3, last_mean3, state3);
+
+            textBoxSDlastMean3.Text = Convert.ToString(last_mean3);
+            textBoxSDairTarg3.Text = Convert.ToString(target_air3);
+            textBoxSDairTemp3.Text = Convert.ToString(podtemp_air3);
+            textBoxSDwaterTarg3.Text = Convert.ToString(target_water3);
+            textBoxSDwaterTemp3.Text = Convert.ToString(podtemp_water3);
+            textBoxMarginMin3.Text = Convert.ToString(min_marg3);
+            textBoxMarginMax3.Text = Convert.ToString(max_marg3);
+            textBoxSDstate3.Text = pad_state(state3);
+
+            string last_means4 = textBoxFA_Message.Text.Substring(220, 4);
+            string target_airs4 = textBoxFA_Message.Text.Substring(224, 4);
+            string podtemp_airs4 = textBoxFA_Message.Text.Substring(228, 4);
+            string target_waters4 = textBoxFA_Message.Text.Substring(232, 4);
+            string podtemp_waters4 = textBoxFA_Message.Text.Substring(236, 4);
+            string min_margs4 = textBoxFA_Message.Text.Substring(240, 4);
+            string max_margs4 = textBoxFA_Message.Text.Substring(244, 4);
+            string states4 = textBoxFA_Message.Text.Substring(248, 2);   //skipping uint8_t num_samp
+            int last_mean4 = int.Parse(big_endian(last_means4), System.Globalization.NumberStyles.HexNumber);
+            int target_air4 = int.Parse(big_endian(target_airs4), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air4 = int.Parse(big_endian(podtemp_airs4), System.Globalization.NumberStyles.HexNumber);
+            int target_water4 = int.Parse(big_endian(target_waters4), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water4 = int.Parse(big_endian(podtemp_waters4), System.Globalization.NumberStyles.HexNumber);
+            int min_marg4 = int.Parse(big_endian(min_margs4), System.Globalization.NumberStyles.HexNumber);
+            int max_marg4 = int.Parse(big_endian(max_margs4), System.Globalization.NumberStyles.HexNumber);
+            int state4 = int.Parse(states4, System.Globalization.NumberStyles.HexNumber);
+            int pct4 = prop_percent(target_air4, target_water4, last_mean4);
+            textBoxSDProp4.Text = Convert.ToString(pct4);
+            textBoxSDmidpoint4.Text = midpoint(target_air4, target_water4, last_mean4, state4);
+
+            textBoxSDlastMean4.Text = Convert.ToString(last_mean4);
+            textBoxSDairTarg4.Text = Convert.ToString(target_air4);
+            textBoxSDairTemp4.Text = Convert.ToString(podtemp_air4);
+            textBoxSDwaterTarg4.Text = Convert.ToString(target_water4);
+            textBoxSDwaterTemp4.Text = Convert.ToString(podtemp_water4);
+            textBoxMarginMin4.Text = Convert.ToString(min_marg4);
+            textBoxMarginMax4.Text = Convert.ToString(max_marg4);
+            textBoxSDstate4.Text = pad_state(state4);
+
+            string last_means5 = textBoxFA_Message.Text.Substring(252, 4);
+            string target_airs5 = textBoxFA_Message.Text.Substring(256, 4);
+            string podtemp_airs5 = textBoxFA_Message.Text.Substring(260, 4);
+            string target_waters5 = textBoxFA_Message.Text.Substring(264, 4);
+            string podtemp_waters5 = textBoxFA_Message.Text.Substring(268, 4);
+            string min_margs5 = textBoxFA_Message.Text.Substring(272, 4);
+            string max_margs5 = textBoxFA_Message.Text.Substring(276, 4);
+            string states5 = textBoxFA_Message.Text.Substring(280, 2);   //skipping uint8_t num_samp
+            int last_mean5 = int.Parse(big_endian(last_means5), System.Globalization.NumberStyles.HexNumber);
+            int target_air5 = int.Parse(big_endian(target_airs5), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_air5 = int.Parse(big_endian(podtemp_airs5), System.Globalization.NumberStyles.HexNumber);
+            int target_water5 = int.Parse(big_endian(target_waters5), System.Globalization.NumberStyles.HexNumber);
+            int podtemp_water5 = int.Parse(big_endian(podtemp_waters5), System.Globalization.NumberStyles.HexNumber);
+            int min_marg5 = int.Parse(big_endian(min_margs5), System.Globalization.NumberStyles.HexNumber);
+            int max_marg5 = int.Parse(big_endian(max_margs5), System.Globalization.NumberStyles.HexNumber);
+            int state5 = int.Parse(states5, System.Globalization.NumberStyles.HexNumber);
+            int pct5 = prop_percent(target_air5, target_water5, last_mean5);
+            textBoxSDProp5.Text = Convert.ToString(pct5);
+            textBoxSDmidpoint5.Text = midpoint(target_air5, target_water5, last_mean5, state5);
+
+            textBoxSDlastMean5.Text = Convert.ToString(last_mean5);
+            textBoxSDairTarg5.Text = Convert.ToString(target_air5);
+            textBoxSDairTemp5.Text = Convert.ToString(podtemp_air5);
+            textBoxSDwaterTarg5.Text = Convert.ToString(target_water5);
+            textBoxSDwaterTemp5.Text = Convert.ToString(podtemp_water5);
+            textBoxMarginMin5.Text = Convert.ToString(min_marg5);
+            textBoxMarginMax5.Text = Convert.ToString(max_marg5);
+            textBoxSDstate5.Text = pad_state(state5);
+
+            string unknown_limits = textBoxFA_Message.Text.Substring(284, 4);
+            string total_flows = textBoxFA_Message.Text.Substring(288, 4);
+            string downspout_rates = textBoxFA_Message.Text.Substring(292, 4);
+            int unknown_limit = int.Parse(big_endian(unknown_limits), System.Globalization.NumberStyles.HexNumber);
+            int total_flow = int.Parse(big_endian(total_flows), System.Globalization.NumberStyles.HexNumber);
+            int downspout_rate = int.Parse(big_endian(downspout_rates), System.Globalization.NumberStyles.HexNumber);
+            textBoxSDunkLim.Text = Convert.ToString(unknown_limit);
+            textBoxSDtotalVol.Text = Convert.ToString(total_flow);
+            textBoxSDdownSpout.Text = Convert.ToString(downspout_rate);
+
+            string water_limits = textBoxFA_Message.Text.Substring(296, 4);
+            string water_resets = textBoxFA_Message.Text.Substring(300, 4);
+            string trickle_vols = "????";
+
+            trickle_vols = textBoxFA_Message.Text.Substring(304, 4);
+            string marginscores = "????";
+            marginscores = textBoxFA_Message.Text.Substring(308, 4);
+
+            int water_limit = int.Parse(big_endian(water_limits), System.Globalization.NumberStyles.HexNumber);
+            int water_reset = int.Parse(big_endian(water_resets), System.Globalization.NumberStyles.HexNumber);
+            int trickle_vol = 0;
+                trickle_vol = int.Parse(big_endian(trickle_vols), System.Globalization.NumberStyles.HexNumber);
+            int marginscore = 0;
+                marginscore = int.Parse(big_endian(marginscores), System.Globalization.NumberStyles.HexNumber);
+
+            textBoxSDWaterLim.Text = Convert.ToString(water_limit);
+            textBoxSDwaterResets.Text = Convert.ToString(water_reset);
+            textBoxSDtrickleVol.Text = Convert.ToString(trickle_vol);
+            textBoxSDMargin.Text = Convert.ToString(marginscore);
+
+            int cairdev0 = target_air0 - last_mean0;
+            textBoxAirDev0.Text = Convert.ToString(cairdev0);
+            int cairdev1 = target_air1 - last_mean1;
+            textBoxAirDev1.Text = Convert.ToString(cairdev1);
+            int cairdev2 = target_air2 - last_mean2;
+            textBoxAirDev2.Text = Convert.ToString(cairdev2);
+            int cairdev3 = target_air3 - last_mean3;
+            textBoxAirDev3.Text = Convert.ToString(cairdev3);
+            int cairdev4 = target_air4 - last_mean4;
+            textBoxAirDev4.Text = Convert.ToString(cairdev4);
+            int cairdev5 = target_air5 - last_mean5;
+            textBoxAirDev5.Text = Convert.ToString(cairdev5);
+
+            int cmargin0 = target_air0 - target_water0;
+            textBoxMargin0.Text = Convert.ToString(cmargin0);
+            int cmargin1 = target_air1 - target_water1;
+            textBoxMargin1.Text = Convert.ToString(cmargin1);
+            int cmargin2 = target_air2 - target_water2;
+            textBoxMargin2.Text = Convert.ToString(cmargin2);
+            int cmargin3 = target_air3 - target_water3;
+            textBoxMargin3.Text = Convert.ToString(cmargin3);
+            int cmargin4 = target_air4 - target_water4;
+            textBoxMargin4.Text = Convert.ToString(cmargin4);
+            int cmargin5 = target_air5 - target_water5;
+            textBoxMargin5.Text = Convert.ToString(cmargin5);
+
+
+            // build csv string for excel sheet analysis
+            textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTarg0.Text + "," + textBoxSDairTarg1.Text + "," + textBoxSDairTarg2.Text + "," + textBoxSDairTarg3.Text + "," + textBoxSDairTarg4.Text + "," + textBoxSDairTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxAirDev0.Text + "," + textBoxAirDev1.Text + "," + textBoxAirDev2.Text + "," + textBoxAirDev3.Text + "," + textBoxAirDev4.Text + "," + textBoxAirDev5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDlastMean0.Text + "," + textBoxSDlastMean1.Text + "," + textBoxSDlastMean2.Text + "," + textBoxSDlastMean3.Text + "," + textBoxSDlastMean4.Text + "," + textBoxSDlastMean5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDwaterTarg0.Text + "," + textBoxSDwaterTarg1.Text + "," + textBoxSDwaterTarg2.Text + "," + textBoxSDwaterTarg3.Text + "," + textBoxSDwaterTarg4.Text + "," + textBoxSDwaterTarg5.Text + ",";
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxMargin0.Text + "," + textBoxMargin1.Text + "," + textBoxMargin2.Text + "," + textBoxMargin3.Text + "," + textBoxMargin4.Text + "," + textBoxMargin5.Text + ",";
+            if (textBoxSDtotalVol.Text.Length > 3)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtotalVol.Text.Substring(0, textBoxSDtotalVol.Text.Length - 3) + "." + textBoxSDtotalVol.Text.Substring(textBoxSDtotalVol.Text.Length - 3, 3) + ",";
+            else if (textBoxSDtotalVol.Text.Length > 2)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0." + textBoxSDtotalVol.Text + ",";
+            else if (textBoxSDtotalVol.Text.Length > 1)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.0" + textBoxSDtotalVol.Text + ",";
+            else if (textBoxSDtotalVol.Text.Length > 0)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.00" + textBoxSDtotalVol.Text + ",";
+            else
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0.000" + ",";
+            if (textBoxSDairTemp5.Text.Length > 1)
+                textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDairTemp5.Text.Substring(0, textBoxSDairTemp5.Text.Length - 1) + "." + textBoxSDairTemp5.Text.Substring(textBoxSDairTemp5.Text.Length - 1, 1) + ",";
+            else
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "0." + textBoxSDairTemp5.Text + ",";
+
+            textBoxCSVstring.Text = textBoxCSVstring.Text + textBoxSDtrickleVol.Text;
+        }
 
         int parse_common_message_header()
         {
@@ -1014,7 +1349,10 @@ namespace cwtest
                         parse_daily_water_log_message();
                         break;
                     case 34: // sensor data
-                        parse_sensor_data_message();
+                        if (textBoxFA_Message.Text.Length >= 312)
+                            parse_new_sensor_data_message();
+                        else
+                            parse_sensor_data_message();
                         break;
                 }
             }
@@ -1196,7 +1534,11 @@ namespace cwtest
 
         private void ButtonCSVRefresh_Click(object sender, EventArgs e)
         {
-            parse_sensor_data_message();
+            if (textBoxFA_Message.Text.Length >= 312)
+                parse_new_sensor_data_message();
+            else
+                parse_sensor_data_message();
+ 
             this.Refresh();
         }
 

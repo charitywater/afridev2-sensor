@@ -34,6 +34,7 @@ typedef struct sensorStats_s {
     uint16_t water_limit;                                  /**< Number of sequential measurements with water before restting */
     int16_t tempCelcius;                                   /**< Temperature reading from chip */
     uint16_t trickleVolume;                                /**< Last amount of water detected below the trickle level */
+    uint16_t margin_growth;                                /**< The latest margin growth metric */
     uint8_t pump_active;                                   /**< Current status of pump */
     uint8_t air_wait;                                      /**< wait to reestablish air target */
 } sensorStats_t;

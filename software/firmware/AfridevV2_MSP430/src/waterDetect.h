@@ -62,6 +62,8 @@ typedef struct
     int16_t podtemp_air;                                   /**< pod temperature when air target is set */
     uint16_t target_water;                                 /**< lowest water mean */
     int16_t podtemp_water;                                 /**< pod temperature when water target is set */
+    uint16_t min_margin;                                   /**< smallest difference between air and water targets */
+    uint16_t max_margin;                                   /**< largest difference between air and water targets */
     uint8_t state;                                         /**< current state of the pad ('w'=water, 'a'=air, '?'=unsure */
     uint8_t num_samp;                                      /**< last number of samples */
 } Pad_Stats_t;
@@ -113,6 +115,7 @@ uint8_t waterDetect_debug_msg(uint8_t *dst, uint8_t pad);
 uint8_t waterDetect_read_water_level(uint8_t *submergedPadsBitMask, uint8_t *unknowns);
 uint8_t waterDetect_read_sample_count(void);
 uint16_t waterDetect_get_flow_rate(uint8_t level, uint8_t *percentile);
+uint16_t waterDetect_get_margin_growth(void);
 uint16_t waterDetect_getTargetAir(uint8_t padId);
 uint16_t waterDetect_getTargetWater(uint8_t padId);
 uint16_t waterDetect_getPadSubmergedCount(uint8_t padId);
