@@ -361,9 +361,22 @@ void sysExec_exec(void)
                         startUpMessageCheck();
                     }
 #ifndef WATER_DEBUG
+#ifdef SILENT_WATER_RESET
+                    else if (sysExecData.faultWaterDetect)
+                    {      
+                        // this is done silently. Water sediment has caused a water stuck condition
+                        // time to reacquire the air and water limits                 
+                        waterDetect_init();
+                        sysExecData.faultWaterDetect = false;
+                    }
+#endif
                     // wait until system startup sequences have finished and measurement data was seen at least once
-                    // and baseline data recorded to queue up transmission
+                    // and baseline data recorded to queue up 
+#ifdef SILENT_WATER_RESET
+                    else if (sysExecData.sendSensorDataMessage)
+#else
                     else if (sysExecData.sendSensorDataMessage || sysExecData.faultWaterDetect)
+#endif
                     {
                         // let the OTA reply for SENSOR_DATA get out before queuing up the reply message
                         // also be sure NO OTHER MESSAGE is being transmitted
@@ -371,21 +384,26 @@ void sysExec_exec(void)
                         {
                             // Tell the modem code to send the data
                             // if the water detection got stuck reporting water or unknowns endlessly, we want to see data for this
-                            if (sysExecData.sendSensorDataNow || sysExecData.faultWaterDetect)
+
+#ifdef SILENT_WATER_RESET
+                            if (sysExecData.sendSensorDataNow)                               
+#else
+                            if (sysExecData.sendSensorDataNow || sysExecData.faultWaterDetect)                               
+#endif
                             {
                                 sendSensorDataMsg();
                                 sysExecData.total_flow = 0;
                             }
                             else
                                 msgSched_scheduleSensorDataMessage();
-
+#ifndef SILENT_WATER_RESET
                             // clear out the data and start again
                             if (sysExecData.faultWaterDetect)
                             {
                             	waterDetect_init();
                             	sysExecData.faultWaterDetect = false;
                             }
-
+#endif
                             sysExecData.sendSensorDataMessage = false;
                         }
                     }
