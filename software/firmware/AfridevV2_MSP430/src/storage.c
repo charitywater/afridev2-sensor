@@ -329,12 +329,14 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 #endif
     if (stData.storageTime_minutes >= TOTAL_MINUTES_IN_A_HOUR)
     {
+        // Record data
+        recordLastHour();
+		
         // Update time
         stData.storageTime_hours++;
         stData.storageTime_minutes -= TOTAL_MINUTES_IN_A_HOUR;
 
-        // Record data
-        recordLastHour();
+
 #ifdef SEND_DEBUG_TIME_DATA
         sysExecData.sendTimeStamp = true;
 #endif
