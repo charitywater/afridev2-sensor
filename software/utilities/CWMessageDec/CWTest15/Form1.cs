@@ -20,11 +20,13 @@ namespace cwtest
                 textBoxGMT_Time.Text = Convert.ToString(get_FA_time(textBoxFA_Message.Text.Substring(6, 12)));
             textBoxTZ_Hours.Text = "0";
             textBoxTZ_Minutes.Text = "0";
+#if false
             checkBoxNewGPS.Checked = true;
             checkBoxExistingGPS.Checked = false;
             textBoxSatellite.Text = "4";
             textBoxHDOP.Text = "30";
             textBoxMeasTime.Text = "60";
+#endif
             textBoxUnkLimit.Text = "90";
             textBoxWaterLimit.Text = "900";
             listViewDWL_LPH.View = View.Details;
@@ -192,6 +194,66 @@ namespace cwtest
             return (answer);
         }
 
+        private string reply_message_id(int code)
+        {
+            string answer = "?";
+            switch (code)
+            {
+                case 0x01: answer = "GMT Clock Update"; break;
+                case 0x02: answer = "Storage Clock Alignment"; break;
+                case 0x03: answer = "Reset Data"; break;
+                case 0x04: answer = "Reset Red Flag"; break;
+                case 0x05: answer = "Activate Device"; break;
+                case 0x06: answer = "Deactivate Device"; break;
+                case 0x07: answer = "Set Transmission Rate"; break;
+                case 0x08: answer = "Reset Device"; break;
+                case 0x0d: answer = "GPS Request"; break;
+                case 0x0e: answer = "GPS Measurement Params"; break;
+                case 0x0f: answer = "Sensor Request"; break;
+                case 0x10: answer = "Firmware Update"; break;
+                default: answer = "Unknown Reply"; break;
+            }
+            return (answer);
+        }
+
+        private string fw_error_code(int code)
+        {
+            string answer = "?";
+            switch (code)
+            {
+                case 0: answer = "None"; break;
+                case -1: answer = "Modem Error"; break;
+                case -2: answer = "Section Header Error"; break;
+                case -3: answer = "Parameter Error"; break;
+                case -4: answer = "CRC Error"; break;
+                case -5: answer = "Timeout Error"; break;
+                default: answer = "Unknown Error"; break;
+            }
+            return (answer);
+        }
+
+
+
+        private string req_type(int code)
+        {
+            string answer = "?";
+            switch (code)
+            {
+                case 0x00: answer = "Request Sensor Data"; break;
+                case 0x01: answer = "Overwrite Factory Data"; break;
+                case 0x02: answer = "Reset Water Detection"; break;
+                case 0x03: answer = "Set Unknown Limit"; break;
+                case 0x04: answer = "Report Water Flow Data Now"; break;
+                case 0x05: answer = "Set Downspout Rate"; break;
+                case 0x06: answer = "Set Water Limit"; break;
+                case 0x07: answer = "Set Wake Time"; break;
+                case 0x08: answer = "NOP Response"; break;
+                case 0x09: answer = "Margin Growth Data"; break;
+                default: answer = "Unknown Reqtype"; break;
+            }
+            return (answer);
+        }
+
         public bool OnlyHexInString(string test)
         {
             // For C-style hex notation (0xFF) you can use @"\A\b(0[xX])?[0-9a-fA-F]+\b\Z"
@@ -315,7 +377,41 @@ namespace cwtest
                 int sys_min = systime / 60;
                 systime -= sys_min * 60;
                 int sys_sec = systime;
-                textBoxTimeSysTime.Text = Convert.ToString(sys_hour) + ":" + Convert.ToString(sys_min) + ":" + Convert.ToString(sys_sec);
+
+                string sys_sec_s;
+                if (sys_sec >= 0 && sys_sec < 60)
+                {
+                    sys_sec_s = Convert.ToString(sys_sec);
+                    if (sys_sec_s.Length == 1)
+                        sys_sec_s = "0" + sys_sec_s;
+                }
+                else
+                    sys_sec_s = "00";
+
+                string sys_min_s;
+                if (sys_min >= 0 && sys_min < 60)
+                {
+                    sys_min_s = Convert.ToString(sys_min);
+                    if (sys_min_s.Length == 1)
+                        sys_min_s = "0" + sys_min_s;
+                }
+                else
+                    sys_min_s = "00";
+
+                string sys_hour_s;
+                if (sys_hour >= 0 && sys_hour < 24)
+                {
+                    sys_hour_s = Convert.ToString(sys_hour);
+                    if (sys_hour_s.Length == 1)
+                        sys_hour_s = "0" + sys_hour_s;
+                }
+                else
+                    sys_hour_s = "00";
+
+                string sys_day_s;
+                sys_day_s = Convert.ToString(sys_day);
+
+                textBoxTimeSysTime.Text = sys_day_s + ":" + sys_hour_s + ":" + sys_min_s + ":" + sys_sec_s;
                 string secs = textBoxFA_Message.Text.Substring(40, 2);
                 string mins = textBoxFA_Message.Text.Substring(42, 2);
                 string hours = textBoxFA_Message.Text.Substring(44, 2);
@@ -333,9 +429,38 @@ namespace cwtest
                 string st_mins = textBoxFA_Message.Text.Substring(54, 2);
                 string st_hours = textBoxFA_Message.Text.Substring(56, 2);
                 int st_sec = int.Parse(st_secs, System.Globalization.NumberStyles.HexNumber);
+                string st_sec_s;
+                if (st_sec >= 0 && st_sec < 60)
+                {
+                    st_sec_s = Convert.ToString(st_sec);
+                    if (st_sec_s.Length == 1)
+                        st_sec_s = "0" + st_sec_s;
+                }
+                else
+                    st_sec_s = "00";
+                string st_min_s;
                 int st_min = int.Parse(st_mins, System.Globalization.NumberStyles.HexNumber);
+                if (st_min >= 0 && st_sec < 60)
+                {
+                    st_min_s = Convert.ToString(st_min);
+                    if (st_min_s.Length == 1)
+                        st_min_s = "0" + st_min_s;
+                }
+                else
+                    st_min_s = "00";
+                string st_hour_s;
                 int st_hour = int.Parse(st_hours, System.Globalization.NumberStyles.HexNumber);
-                textBoxTimeStorage.Text = Convert.ToString(st_hour) + ":" + Convert.ToString(st_min) + ":" + Convert.ToString(st_sec);
+                if (st_hour >= 0 && st_hour < 24)
+                {
+                    st_hour_s = Convert.ToString(st_hour);
+                    if (st_hour_s.Length == 1)
+                        st_hour_s = "0" + st_hour_s;
+                }
+                else
+                    st_hour_s = "00";
+                textBoxTimeStorage.Text = st_hour_s + ":" + st_min_s + ":" + st_sec_s;
+
+                textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + "," + textBoxTimeRTC.Text + "," + textBoxTimeSysTime.Text + "," + textBoxTimeStorage.Text;
             }
             else
             {
@@ -344,6 +469,166 @@ namespace cwtest
                 textBoxTimeRTC.Text = "";
             }
         }
+
+        void parse_ota_reply_message()
+        {
+            if (textBoxFA_Message.Text.Length >= 48)
+            {
+                string opcodes = textBoxFA_Message.Text.Substring(32, 2);
+                int opcode = int.Parse(opcodes, System.Globalization.NumberStyles.HexNumber);
+                textBoxOR_Opcode.Text = reply_message_id(opcode);
+                string msgnums = textBoxFA_Message.Text.Substring(34, 4);
+                textBoxOR_Msgnum.Text = msgnums;
+                string statuss = textBoxFA_Message.Text.Substring(38, 2);
+                int status = int.Parse(statuss, System.Globalization.NumberStyles.HexNumber);
+                textBoxOR_Status.Text = Convert.ToString(status);
+                switch(opcode)
+                {
+                    case 1:
+                        string accepts = textBoxFA_Message.Text.Substring(40, 2);
+                        int accept = int.Parse(accepts, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Accept.Text = Convert.ToString(accept);
+                        string gmtsecs = textBoxFA_Message.Text.Substring(42, 2);
+                        int gmtsec = int.Parse(gmtsecs, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmtsec.Text = Convert.ToString(gmtsec);
+                        string gmtmins = textBoxFA_Message.Text.Substring(44, 2);
+                        int gmtmin = int.Parse(gmtmins, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmtmin.Text = Convert.ToString(gmtmin);
+                        string gmthours = textBoxFA_Message.Text.Substring(46, 2);
+                        int gmthour = int.Parse(gmthours, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmthour.Text = Convert.ToString(gmthour);
+                        string gmtdays = textBoxFA_Message.Text.Substring(48, 4);
+                        int gmtday = int.Parse(gmtdays, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmtday.Text = Convert.ToString(gmtday);
+                        break;
+                    case 2:
+                        string gmt2secs = textBoxFA_Message.Text.Substring(40, 2);
+                        int gmt2sec = int.Parse(gmt2secs, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmtsec.Text = Convert.ToString(gmt2sec);
+                        string gmt2mins = textBoxFA_Message.Text.Substring(42, 2);
+                        int gmt2min = int.Parse(gmt2mins, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmtmin.Text = Convert.ToString(gmt2min);
+                        string gmt2hours = textBoxFA_Message.Text.Substring(44, 2);
+                        int gmt2hour = int.Parse(gmt2hours, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Gmthour.Text = Convert.ToString(gmt2hour);
+                        string alignsecs = textBoxFA_Message.Text.Substring(48, 2);
+                        int alignsec = int.Parse(alignsecs, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Alignsec.Text = Convert.ToString(alignsec);
+                        string alignmins = textBoxFA_Message.Text.Substring(50, 2);
+                        int alignmin = int.Parse(alignmins, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Alignmin.Text = Convert.ToString(alignmin);
+                        string alignhours = textBoxFA_Message.Text.Substring(52, 2);
+                        int alignhour = int.Parse(alignhours, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Alignhour.Text = Convert.ToString(alignhour);
+                        break;
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 8:
+                        ; // nothing to do
+                        break;
+                    case 7:
+                        string tranrates = textBoxFA_Message.Text.Substring(40, 2);
+                        int tranrate = int.Parse(tranrates, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Tranrate.Text = Convert.ToString(tranrate);
+                        break;
+                    case 13:
+                        if (textBoxFA_Message.Text.Length >= 70)
+                        {
+                            string hours = textBoxFA_Message.Text.Substring(40, 2);
+                            int hour = int.Parse(hours, System.Globalization.NumberStyles.HexNumber);
+                            textBoxGPS_Hours.Text = Convert.ToString(hour);
+                            string minutes = textBoxFA_Message.Text.Substring(42, 2);
+                            int minute = int.Parse(minutes, System.Globalization.NumberStyles.HexNumber);
+                            textBoxGPS_Minutes.Text = Convert.ToString(minute);
+
+                            textBoxGPS_Latitude.Text = format_latitude(textBoxFA_Message.Text.Substring(44, 8));
+                            textBoxGPS_Longitude.Text = format_longitude(textBoxFA_Message.Text.Substring(52, 8));
+
+                            string fixqs = textBoxFA_Message.Text.Substring(60, 2);
+                            int fixq = int.Parse(fixqs, System.Globalization.NumberStyles.HexNumber);
+                            checkBoxGPS_FixQ.Checked = fixq != 0 ? true : false;
+                            string sats = textBoxFA_Message.Text.Substring(62, 2);
+                            int sat = int.Parse(sats, System.Globalization.NumberStyles.HexNumber);
+                            textBoxGPS_Sat.Text = Convert.ToString(sat);
+                            string hdops = textBoxFA_Message.Text.Substring(64, 2);
+                            int hdop = int.Parse(hdops, System.Globalization.NumberStyles.HexNumber);
+                            hdops = Convert.ToString(hdop);
+                            if (hdops.Length == 2)
+                                textBoxGPS_HDOP.Text = hdops.Substring(0, 1) + "." + hdops.Substring(1, 1) + " m";
+                            else if (hdops.Length == 3)
+                                textBoxGPS_HDOP.Text = hdops.Substring(0, 2) + "." + hdops.Substring(2, 1) + " m";
+                            else
+                                textBoxGPS_HDOP.Text = "0." + hdops.Substring(0, 1) + " m";
+                            string mts = textBoxFA_Message.Text.Substring(66, 4);
+                            int mt = int.Parse(mts, System.Globalization.NumberStyles.HexNumber);
+                            textBoxGPS_Time.Text = Convert.ToString(mt) + " sec";
+                        }
+                        else
+                        {
+                            textBoxGPS_Hours.Text = "";
+                            textBoxGPS_Minutes.Text = "";
+                            textBoxGPS_Latitude.Text = "";
+                            textBoxGPS_Longitude.Text = "";
+                            checkBoxGPS_FixQ.Checked = false;
+                            textBoxGPS_Sat.Text = "";
+                            textBoxGPS_HDOP.Text = "";
+                            textBoxGPS_Time.Text = "";
+                        }
+                        break;
+                    case 14:
+                        string sat2s = textBoxFA_Message.Text.Substring(40, 2);
+                        int sat2 = int.Parse(sat2s, System.Globalization.NumberStyles.HexNumber);
+                        textBoxGPS_Sat.Text = Convert.ToString(sat2);
+                        string hdop2s = textBoxFA_Message.Text.Substring(42, 2);
+                        int hdop2 = int.Parse(hdop2s, System.Globalization.NumberStyles.HexNumber);
+                        hdop2s = Convert.ToString(hdop2);
+                        if (hdop2s.Length == 2)
+                            textBoxGPS_HDOP.Text = hdop2s.Substring(0, 1) + "." + hdop2s.Substring(1, 1) + " m";
+                        else if (hdop2s.Length == 3)
+                            textBoxGPS_HDOP.Text = hdop2s.Substring(0, 2) + "." + hdop2s.Substring(2, 1) + " m";
+                        else
+                            textBoxGPS_HDOP.Text = "0." + hdop2s.Substring(0, 1) + " m";
+                        string mts2 = textBoxFA_Message.Text.Substring(44, 4);
+                        int mt2 = int.Parse(mts2, System.Globalization.NumberStyles.HexNumber);
+                        textBoxGPS_Time.Text = Convert.ToString(mt2) + " sec";
+                        break;
+                    case 15:
+                        string reqtypes = textBoxFA_Message.Text.Substring(40, 2);
+                        int reqtype = int.Parse(reqtypes, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Reqtype.Text = req_type(reqtype);
+                        string reqdatas = textBoxFA_Message.Text.Substring(42, 4);
+                        int reqdata = int.Parse(reqdatas, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Reqdata.Text = Convert.ToString(reqdata);
+                        break;
+                    case 16:
+                        string errcodes = textBoxFA_Message.Text.Substring(40, 2);
+                        int errcode = int.Parse(errcodes, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Errcode.Text = fw_error_code(errcode);
+                        string msgcrcs = textBoxFA_Message.Text.Substring(42, 4);
+                        int msgcrc = int.Parse(msgcrcs, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Msgcrc.Text = Convert.ToString(msgcrc);
+                        string calccrcs = textBoxFA_Message.Text.Substring(46, 4);
+                        int calccrc = int.Parse(calccrcs, System.Globalization.NumberStyles.HexNumber);
+                        textBoxOR_Calccrc.Text = Convert.ToString(calccrc);
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+            else
+            {
+                textBoxSOS_Reason.Text = "";
+                checkBoxSOS_Good_APP.Checked = false;
+                textBoxSOS_FBC.Text = "";
+                textBoxSOS_FWCR.Text = "";
+                checkBoxSOS_FWIR.Checked = false;
+                textBoxSOS_CRC.Text = "";
+            }
+        }
+
 
         void parse_sos_message()
         {
@@ -443,6 +728,9 @@ namespace cwtest
             if (textBoxFA_Message.Text.Length >= 256)
             {
                 int cursor = 32;
+
+                textBoxCSVstring.Text = textBoxCSVwell.Text + "," + textBoxCSVmonth.Text + " " + textBoxCSVhour.Text + ",";
+
                 // clear out the list view before filling again
                 listViewDWL_LPH.Items.Clear();
                 for (i = 0; i < 24; i++)
@@ -453,6 +741,9 @@ namespace cwtest
                     int iph;
 
                     times = Convert.ToString(i);
+
+                    textBoxCSVstring.Text = textBoxCSVstring.Text + "t:" + times + ",";
+
                     if (i == 0)
                         arr[0] = "12 am";
                     else if (i < 12)
@@ -471,39 +762,56 @@ namespace cwtest
                     cursor += 4;
                     itm = new ListViewItem(arr);
                     listViewDWL_LPH.Items.Add(itm);
+
+                    textBoxCSVstring.Text = textBoxCSVstring.Text + Convert.ToString(flow) + ",";
                 }
                 string totals = textBoxFA_Message.Text.Substring(128, 4);
                 int total = int.Parse(totals, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Total.Text = Convert.ToString(total);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "tot:" + textBoxDWL_Total.Text + ",";
+
                 string avgs = textBoxFA_Message.Text.Substring(132, 4);
                 int avg = int.Parse(avgs, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Average.Text = Convert.ToString(avg);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "avg:" + textBoxDWL_Average.Text + ",";
+
                 string rfs = textBoxFA_Message.Text.Substring(136, 2);
                 int rf = int.Parse(rfs, System.Globalization.NumberStyles.HexNumber);
                 checkBoxDWL_RedFlag.Checked = rf != 0 ? true : false;
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "red:" + Convert.ToString(checkBoxDWL_RedFlag.Checked) + ",";
+
                 string unks = textBoxFA_Message.Text.Substring(140, 4);
                 int unk = int.Parse(unks, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Unknown.Text = Convert.ToString(unk);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "unk:" + textBoxDWL_Unknown.Text + ",";
+
                 string pad0s = textBoxFA_Message.Text.Substring(144, 4);
                 int pad0 = int.Parse(pad0s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad0.Text = Convert.ToString(pad0);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p0:" + textBoxDWL_Pad0.Text + ",";
                 string pad1s = textBoxFA_Message.Text.Substring(148, 4);
                 int pad1 = int.Parse(pad1s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad1.Text = Convert.ToString(pad1);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p1:" + textBoxDWL_Pad1.Text + ",";
                 string pad2s = textBoxFA_Message.Text.Substring(152, 4);
                 int pad2 = int.Parse(pad2s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad2.Text = Convert.ToString(pad2);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p2:" + textBoxDWL_Pad2.Text + ",";
                 string pad3s = textBoxFA_Message.Text.Substring(156, 4);
                 int pad3 = int.Parse(pad3s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad3.Text = Convert.ToString(pad3);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p3:" + textBoxDWL_Pad3.Text + ",";
                 string pad4s = textBoxFA_Message.Text.Substring(160, 4);
                 int pad4 = int.Parse(pad4s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad4.Text = Convert.ToString(pad4);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p4:" + textBoxDWL_Pad4.Text + ",";
                 string pad5s = textBoxFA_Message.Text.Substring(164, 4);
                 int pad5 = int.Parse(pad5s, System.Globalization.NumberStyles.HexNumber);
                 textBoxDWL_Pad5.Text = Convert.ToString(pad5);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "p5:"+ textBoxDWL_Pad5.Text + ",";
                 string reserveds = textBoxFA_Message.Text.Substring(168, 88); //168, 88
                 checkBoxDWL_ResOK.Checked = OnlyFFInString(reserveds);
+                textBoxCSVstring.Text = textBoxCSVstring.Text + "ff:" + Convert.ToString(checkBoxDWL_ResOK.Checked);
             }
             else
             {
@@ -1308,10 +1616,6 @@ namespace cwtest
             return (msg_type);
         }
 
-        void parse_ota_reply_message()
-        {
-            ;
-        }
 
         private void textBoxFA_Message_TextChanged(object sender, EventArgs e)
         {
@@ -1453,6 +1757,7 @@ namespace cwtest
 
         private void checkBoxNewGPS_CheckedChanged(object sender, EventArgs e)
         {
+#if false
             if (checkBoxNewGPS.Checked)
             {
                 checkBoxExistingGPS.Checked = false;
@@ -1463,24 +1768,27 @@ namespace cwtest
                 checkBoxExistingGPS.Checked = true;
                 textBoxGPSRequest.Text = space_bytes("0D5AA500");
             }
+#endif
             this.Refresh();
         }
 
         private void checkBoxExistingGPS_CheckedChanged(object sender, EventArgs e)
         {
+#if false
             if (checkBoxExistingGPS.Checked)
                 checkBoxNewGPS.Checked = false;
             else
                 checkBoxNewGPS.Checked = true;
+#endif
             this.Refresh();
         }
 
         private void buttonGPS_Criteria_Click(object sender, EventArgs e)
         {
+#if false
             int Satellite = int.Parse(textBoxSatellite.Text);
             int HDOP = int.Parse(textBoxHDOP.Text);
             int MeasTime = int.Parse(textBoxMeasTime.Text);
-
             if (Satellite < 4)
                 Satellite = 4;
             if (Satellite > 8)
@@ -1499,6 +1807,7 @@ namespace cwtest
             string MeasTimes = MeasTime.ToString("X4");
 
             textBoxGPSMC_Message.Text = space_bytes("0E5AA5" + Satellites + HDOPs + MeasTimes);
+#endif
             this.Refresh();
         }
 
@@ -1548,6 +1857,22 @@ namespace cwtest
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            parse_daily_water_log_message();
+            this.Refresh();
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label28_Click(object sender, EventArgs e)
         {
 
         }

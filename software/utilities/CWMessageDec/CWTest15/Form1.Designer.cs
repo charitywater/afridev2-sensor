@@ -55,21 +55,6 @@
             this.label22 = new System.Windows.Forms.Label();
             this.textBoxTransRateDays = new System.Windows.Forms.TextBox();
             this.label21 = new System.Windows.Forms.Label();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.textBoxGPSRequest = new System.Windows.Forms.TextBox();
-            this.label25 = new System.Windows.Forms.Label();
-            this.checkBoxExistingGPS = new System.Windows.Forms.CheckBox();
-            this.checkBoxNewGPS = new System.Windows.Forms.CheckBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.buttonGPS_Criteria = new System.Windows.Forms.Button();
-            this.textBoxGPSMC_Message = new System.Windows.Forms.TextBox();
-            this.label28 = new System.Windows.Forms.Label();
-            this.textBoxMeasTime = new System.Windows.Forms.TextBox();
-            this.textBoxHDOP = new System.Windows.Forms.TextBox();
-            this.textBoxSatellite = new System.Windows.Forms.TextBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.label26 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
@@ -104,6 +89,7 @@
             this.label37 = new System.Windows.Forms.Label();
             this.label36 = new System.Windows.Forms.Label();
             this.groupBox11 = new System.Windows.Forms.GroupBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.checkBoxDWL_ResOK = new System.Windows.Forms.CheckBox();
             this.textBoxDWL_Pad5 = new System.Windows.Forms.TextBox();
             this.textBoxDWL_Pad4 = new System.Windows.Forms.TextBox();
@@ -144,8 +130,23 @@
             this.textBoxSDpadBL0 = new System.Windows.Forms.TextBox();
             this.textBoxSDpadBL1 = new System.Windows.Forms.TextBox();
             this.groupBox13 = new System.Windows.Forms.GroupBox();
+            this.textBoxMarginMax4 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMax2 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMax5 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMax3 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMax0 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMax1 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMin4 = new System.Windows.Forms.TextBox();
+            this.buttonCSVRefresh = new System.Windows.Forms.Button();
+            this.label95 = new System.Windows.Forms.Label();
+            this.textBoxMarginMin2 = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMin5 = new System.Windows.Forms.TextBox();
+            this.label94 = new System.Windows.Forms.Label();
+            this.textBoxMarginMin3 = new System.Windows.Forms.TextBox();
             this.textBoxSDMargin = new System.Windows.Forms.TextBox();
+            this.textBoxMarginMin0 = new System.Windows.Forms.TextBox();
             this.label93 = new System.Windows.Forms.Label();
+            this.textBoxMarginMin1 = new System.Windows.Forms.TextBox();
             this.textBoxMargin4 = new System.Windows.Forms.TextBox();
             this.textBoxMargin2 = new System.Windows.Forms.TextBox();
             this.textBoxMargin5 = new System.Windows.Forms.TextBox();
@@ -275,7 +276,6 @@
             this.textBoxCSVmonth = new System.Windows.Forms.TextBox();
             this.textBoxCSVhour = new System.Windows.Forms.TextBox();
             this.label86 = new System.Windows.Forms.Label();
-            this.buttonCSVRefresh = new System.Windows.Forms.Button();
             this.textBoxTimeSysTime = new System.Windows.Forms.TextBox();
             this.label88 = new System.Windows.Forms.Label();
             this.label89 = new System.Windows.Forms.Label();
@@ -283,26 +283,47 @@
             this.label90 = new System.Windows.Forms.Label();
             this.textBoxTimeRTC = new System.Windows.Forms.TextBox();
             this.label91 = new System.Windows.Forms.Label();
-            this.label94 = new System.Windows.Forms.Label();
-            this.label95 = new System.Windows.Forms.Label();
-            this.textBoxMarginMin4 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMin2 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMin5 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMin3 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMin0 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMin1 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax4 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax2 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax5 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax3 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax0 = new System.Windows.Forms.TextBox();
-            this.textBoxMarginMax1 = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.textBoxOR_Opcode = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Msgnum = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Status = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.textBoxOR_Accept = new System.Windows.Forms.TextBox();
+            this.label96 = new System.Windows.Forms.Label();
+            this.label97 = new System.Windows.Forms.Label();
+            this.label98 = new System.Windows.Forms.Label();
+            this.label99 = new System.Windows.Forms.Label();
+            this.label100 = new System.Windows.Forms.Label();
+            this.textBoxOR_Gmtday = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Gmthour = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Gmtmin = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Gmtsec = new System.Windows.Forms.TextBox();
+            this.label101 = new System.Windows.Forms.Label();
+            this.textBoxOR_Alignsec = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Alignmin = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Alignhour = new System.Windows.Forms.TextBox();
+            this.label102 = new System.Windows.Forms.Label();
+            this.label103 = new System.Windows.Forms.Label();
+            this.label104 = new System.Windows.Forms.Label();
+            this.textBoxOR_Tranrate = new System.Windows.Forms.TextBox();
+            this.label105 = new System.Windows.Forms.Label();
+            this.textBoxOR_Reqtype = new System.Windows.Forms.TextBox();
+            this.label106 = new System.Windows.Forms.Label();
+            this.label107 = new System.Windows.Forms.Label();
+            this.textBoxOR_Reqdata = new System.Windows.Forms.TextBox();
+            this.textBoxOR_Errcode = new System.Windows.Forms.TextBox();
+            this.label108 = new System.Windows.Forms.Label();
+            this.textBoxOR_Msgcrc = new System.Windows.Forms.TextBox();
+            this.label109 = new System.Windows.Forms.Label();
+            this.textBoxOR_Calccrc = new System.Windows.Forms.TextBox();
+            this.label110 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.groupBox6.SuspendLayout();
             this.groupBox8.SuspendLayout();
             this.groupBox9.SuspendLayout();
@@ -607,172 +628,6 @@
             this.label21.Size = new System.Drawing.Size(68, 17);
             this.label21.TabIndex = 0;
             this.label21.Text = "# of Days";
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.groupBox4.Controls.Add(this.textBoxGPSRequest);
-            this.groupBox4.Controls.Add(this.label25);
-            this.groupBox4.Controls.Add(this.checkBoxExistingGPS);
-            this.groupBox4.Location = new System.Drawing.Point(577, 434);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(503, 85);
-            this.groupBox4.TabIndex = 41;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "GPS Request";
-            // 
-            // textBoxGPSRequest
-            // 
-            this.textBoxGPSRequest.BackColor = System.Drawing.SystemColors.Highlight;
-            this.textBoxGPSRequest.Location = new System.Drawing.Point(259, 42);
-            this.textBoxGPSRequest.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxGPSRequest.Name = "textBoxGPSRequest";
-            this.textBoxGPSRequest.ReadOnly = true;
-            this.textBoxGPSRequest.Size = new System.Drawing.Size(199, 22);
-            this.textBoxGPSRequest.TabIndex = 41;
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(313, 20);
-            this.label25.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(98, 17);
-            this.label25.TabIndex = 40;
-            this.label25.Text = "OTA Message";
-            // 
-            // checkBoxExistingGPS
-            // 
-            this.checkBoxExistingGPS.AutoSize = true;
-            this.checkBoxExistingGPS.Location = new System.Drawing.Point(11, 23);
-            this.checkBoxExistingGPS.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxExistingGPS.Name = "checkBoxExistingGPS";
-            this.checkBoxExistingGPS.Size = new System.Drawing.Size(172, 21);
-            this.checkBoxExistingGPS.TabIndex = 0;
-            this.checkBoxExistingGPS.Text = "Get Existing GPS Data";
-            this.checkBoxExistingGPS.UseVisualStyleBackColor = true;
-            this.checkBoxExistingGPS.CheckedChanged += new System.EventHandler(this.checkBoxExistingGPS_CheckedChanged);
-            // 
-            // checkBoxNewGPS
-            // 
-            this.checkBoxNewGPS.AutoSize = true;
-            this.checkBoxNewGPS.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.checkBoxNewGPS.Location = new System.Drawing.Point(588, 486);
-            this.checkBoxNewGPS.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxNewGPS.Name = "checkBoxNewGPS";
-            this.checkBoxNewGPS.Size = new System.Drawing.Size(151, 21);
-            this.checkBoxNewGPS.TabIndex = 1;
-            this.checkBoxNewGPS.Text = "Get New GPS Data";
-            this.checkBoxNewGPS.UseVisualStyleBackColor = false;
-            this.checkBoxNewGPS.CheckedChanged += new System.EventHandler(this.checkBoxNewGPS_CheckedChanged);
-            // 
-            // groupBox5
-            // 
-            this.groupBox5.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.groupBox5.Controls.Add(this.buttonGPS_Criteria);
-            this.groupBox5.Controls.Add(this.textBoxGPSMC_Message);
-            this.groupBox5.Controls.Add(this.label28);
-            this.groupBox5.Controls.Add(this.textBoxMeasTime);
-            this.groupBox5.Controls.Add(this.textBoxHDOP);
-            this.groupBox5.Controls.Add(this.textBoxSatellite);
-            this.groupBox5.Controls.Add(this.label27);
-            this.groupBox5.Controls.Add(this.label26);
-            this.groupBox5.Controls.Add(this.label11);
-            this.groupBox5.Location = new System.Drawing.Point(577, 527);
-            this.groupBox5.Margin = new System.Windows.Forms.Padding(4);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox5.Size = new System.Drawing.Size(503, 127);
-            this.groupBox5.TabIndex = 42;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "GPS Set Measurement Criteria";
-            // 
-            // buttonGPS_Criteria
-            // 
-            this.buttonGPS_Criteria.Location = new System.Drawing.Point(280, 25);
-            this.buttonGPS_Criteria.Margin = new System.Windows.Forms.Padding(4);
-            this.buttonGPS_Criteria.Name = "buttonGPS_Criteria";
-            this.buttonGPS_Criteria.Size = new System.Drawing.Size(157, 28);
-            this.buttonGPS_Criteria.TabIndex = 43;
-            this.buttonGPS_Criteria.Text = "Set GPS Criteria";
-            this.buttonGPS_Criteria.UseVisualStyleBackColor = true;
-            this.buttonGPS_Criteria.Click += new System.EventHandler(this.buttonGPS_Criteria_Click);
-            // 
-            // textBoxGPSMC_Message
-            // 
-            this.textBoxGPSMC_Message.BackColor = System.Drawing.SystemColors.Highlight;
-            this.textBoxGPSMC_Message.Location = new System.Drawing.Point(259, 91);
-            this.textBoxGPSMC_Message.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxGPSMC_Message.Name = "textBoxGPSMC_Message";
-            this.textBoxGPSMC_Message.ReadOnly = true;
-            this.textBoxGPSMC_Message.Size = new System.Drawing.Size(199, 22);
-            this.textBoxGPSMC_Message.TabIndex = 42;
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(313, 71);
-            this.label28.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(98, 17);
-            this.label28.TabIndex = 41;
-            this.label28.Text = "OTA Message";
-            // 
-            // textBoxMeasTime
-            // 
-            this.textBoxMeasTime.Location = new System.Drawing.Point(152, 91);
-            this.textBoxMeasTime.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMeasTime.Name = "textBoxMeasTime";
-            this.textBoxMeasTime.Size = new System.Drawing.Size(43, 22);
-            this.textBoxMeasTime.TabIndex = 5;
-            // 
-            // textBoxHDOP
-            // 
-            this.textBoxHDOP.Location = new System.Drawing.Point(152, 58);
-            this.textBoxHDOP.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxHDOP.Name = "textBoxHDOP";
-            this.textBoxHDOP.Size = new System.Drawing.Size(43, 22);
-            this.textBoxHDOP.TabIndex = 4;
-            // 
-            // textBoxSatellite
-            // 
-            this.textBoxSatellite.Location = new System.Drawing.Point(152, 25);
-            this.textBoxSatellite.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxSatellite.Name = "textBoxSatellite";
-            this.textBoxSatellite.Size = new System.Drawing.Size(43, 22);
-            this.textBoxSatellite.TabIndex = 3;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(8, 95);
-            this.label27.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(103, 17);
-            this.label27.TabIndex = 2;
-            this.label27.Text = "Min Meas Time";
-            // 
-            // label26
-            // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(8, 62);
-            this.label26.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(118, 17);
-            this.label26.TabIndex = 1;
-            this.label26.Text = "Max HDOP Score";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(7, 28);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(135, 17);
-            this.label11.TabIndex = 0;
-            this.label11.Text = "Number of Satellites";
             // 
             // groupBox6
             // 
@@ -1119,6 +974,7 @@
             // 
             // groupBox11
             // 
+            this.groupBox11.Controls.Add(this.button2);
             this.groupBox11.Controls.Add(this.checkBoxDWL_ResOK);
             this.groupBox11.Controls.Add(this.textBoxDWL_Pad5);
             this.groupBox11.Controls.Add(this.textBoxDWL_Pad4);
@@ -1151,6 +1007,16 @@
             this.groupBox11.TabIndex = 48;
             this.groupBox11.TabStop = false;
             this.groupBox11.Text = "Daily Water Log Message";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(427, 222);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 42);
+            this.button2.TabIndex = 25;
+            this.button2.Text = "Refresh CSV";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // checkBoxDWL_ResOK
             // 
@@ -1349,6 +1215,7 @@
             // 
             // listViewDWL_LPH
             // 
+            this.listViewDWL_LPH.HideSelection = false;
             this.listViewDWL_LPH.Location = new System.Drawing.Point(19, 47);
             this.listViewDWL_LPH.Margin = new System.Windows.Forms.Padding(4);
             this.listViewDWL_LPH.Name = "listViewDWL_LPH";
@@ -1533,6 +1400,7 @@
             this.groupBox13.Controls.Add(this.textBoxMarginMax0);
             this.groupBox13.Controls.Add(this.textBoxMarginMax1);
             this.groupBox13.Controls.Add(this.textBoxMarginMin4);
+            this.groupBox13.Controls.Add(this.buttonCSVRefresh);
             this.groupBox13.Controls.Add(this.label95);
             this.groupBox13.Controls.Add(this.textBoxMarginMin2);
             this.groupBox13.Controls.Add(this.textBoxMarginMin5);
@@ -1666,12 +1534,139 @@
             this.groupBox13.Text = "Sensor Data";
             this.groupBox13.Enter += new System.EventHandler(this.groupBox13_Enter);
             // 
+            // textBoxMarginMax4
+            // 
+            this.textBoxMarginMax4.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax4.Location = new System.Drawing.Point(294, 261);
+            this.textBoxMarginMax4.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax4.Name = "textBoxMarginMax4";
+            this.textBoxMarginMax4.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax4.TabIndex = 166;
+            // 
+            // textBoxMarginMax2
+            // 
+            this.textBoxMarginMax2.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax2.Location = new System.Drawing.Point(188, 261);
+            this.textBoxMarginMax2.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax2.Name = "textBoxMarginMax2";
+            this.textBoxMarginMax2.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax2.TabIndex = 165;
+            // 
+            // textBoxMarginMax5
+            // 
+            this.textBoxMarginMax5.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax5.Location = new System.Drawing.Point(348, 262);
+            this.textBoxMarginMax5.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax5.Name = "textBoxMarginMax5";
+            this.textBoxMarginMax5.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax5.TabIndex = 164;
+            // 
+            // textBoxMarginMax3
+            // 
+            this.textBoxMarginMax3.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax3.Location = new System.Drawing.Point(244, 261);
+            this.textBoxMarginMax3.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax3.Name = "textBoxMarginMax3";
+            this.textBoxMarginMax3.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax3.TabIndex = 163;
+            // 
+            // textBoxMarginMax0
+            // 
+            this.textBoxMarginMax0.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax0.Location = new System.Drawing.Point(84, 261);
+            this.textBoxMarginMax0.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax0.Name = "textBoxMarginMax0";
+            this.textBoxMarginMax0.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax0.TabIndex = 161;
+            // 
+            // textBoxMarginMax1
+            // 
+            this.textBoxMarginMax1.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMax1.Location = new System.Drawing.Point(134, 261);
+            this.textBoxMarginMax1.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMax1.Name = "textBoxMarginMax1";
+            this.textBoxMarginMax1.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMax1.TabIndex = 162;
+            // 
+            // textBoxMarginMin4
+            // 
+            this.textBoxMarginMin4.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin4.Location = new System.Drawing.Point(294, 237);
+            this.textBoxMarginMin4.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin4.Name = "textBoxMarginMin4";
+            this.textBoxMarginMin4.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin4.TabIndex = 160;
+            // 
+            // buttonCSVRefresh
+            // 
+            this.buttonCSVRefresh.Location = new System.Drawing.Point(421, 22);
+            this.buttonCSVRefresh.Name = "buttonCSVRefresh";
+            this.buttonCSVRefresh.Size = new System.Drawing.Size(75, 45);
+            this.buttonCSVRefresh.TabIndex = 147;
+            this.buttonCSVRefresh.Text = "Refresh CSV";
+            this.buttonCSVRefresh.UseVisualStyleBackColor = true;
+            this.buttonCSVRefresh.Click += new System.EventHandler(this.ButtonCSVRefresh_Click);
+            // 
+            // label95
+            // 
+            this.label95.AutoSize = true;
+            this.label95.Location = new System.Drawing.Point(5, 266);
+            this.label95.Name = "label95";
+            this.label95.Size = new System.Drawing.Size(80, 17);
+            this.label95.TabIndex = 158;
+            this.label95.Text = "margin max";
+            // 
+            // textBoxMarginMin2
+            // 
+            this.textBoxMarginMin2.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin2.Location = new System.Drawing.Point(188, 237);
+            this.textBoxMarginMin2.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin2.Name = "textBoxMarginMin2";
+            this.textBoxMarginMin2.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin2.TabIndex = 159;
+            // 
+            // textBoxMarginMin5
+            // 
+            this.textBoxMarginMin5.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin5.Location = new System.Drawing.Point(348, 238);
+            this.textBoxMarginMin5.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin5.Name = "textBoxMarginMin5";
+            this.textBoxMarginMin5.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin5.TabIndex = 158;
+            // 
+            // label94
+            // 
+            this.label94.AutoSize = true;
+            this.label94.Location = new System.Drawing.Point(5, 243);
+            this.label94.Name = "label94";
+            this.label94.Size = new System.Drawing.Size(77, 17);
+            this.label94.TabIndex = 157;
+            this.label94.Text = "margin min";
+            // 
+            // textBoxMarginMin3
+            // 
+            this.textBoxMarginMin3.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin3.Location = new System.Drawing.Point(244, 237);
+            this.textBoxMarginMin3.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin3.Name = "textBoxMarginMin3";
+            this.textBoxMarginMin3.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin3.TabIndex = 157;
+            // 
             // textBoxSDMargin
             // 
             this.textBoxSDMargin.Location = new System.Drawing.Point(345, 595);
             this.textBoxSDMargin.Name = "textBoxSDMargin";
             this.textBoxSDMargin.Size = new System.Drawing.Size(72, 22);
             this.textBoxSDMargin.TabIndex = 156;
+            // 
+            // textBoxMarginMin0
+            // 
+            this.textBoxMarginMin0.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin0.Location = new System.Drawing.Point(84, 237);
+            this.textBoxMarginMin0.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin0.Name = "textBoxMarginMin0";
+            this.textBoxMarginMin0.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin0.TabIndex = 155;
             // 
             // label93
             // 
@@ -1681,6 +1676,15 @@
             this.label93.Size = new System.Drawing.Size(92, 17);
             this.label93.TabIndex = 155;
             this.label93.Text = "Margin Score";
+            // 
+            // textBoxMarginMin1
+            // 
+            this.textBoxMarginMin1.BackColor = System.Drawing.SystemColors.Window;
+            this.textBoxMarginMin1.Location = new System.Drawing.Point(134, 237);
+            this.textBoxMarginMin1.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxMarginMin1.Name = "textBoxMarginMin1";
+            this.textBoxMarginMin1.Size = new System.Drawing.Size(45, 22);
+            this.textBoxMarginMin1.TabIndex = 156;
             // 
             // textBoxMargin4
             // 
@@ -2678,7 +2682,7 @@
             this.groupBox7.Controls.Add(this.comboBoxSensorReq);
             this.groupBox7.Controls.Add(this.textBoxSensorData);
             this.groupBox7.Controls.Add(this.label78);
-            this.groupBox7.Location = new System.Drawing.Point(577, 662);
+            this.groupBox7.Location = new System.Drawing.Point(577, 431);
             this.groupBox7.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Padding = new System.Windows.Forms.Padding(4);
@@ -2774,7 +2778,7 @@
             this.textBoxCSVstring.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.textBoxCSVstring.Multiline = true;
             this.textBoxCSVstring.Name = "textBoxCSVstring";
-            this.textBoxCSVstring.Size = new System.Drawing.Size(492, 71);
+            this.textBoxCSVstring.Size = new System.Drawing.Size(492, 124);
             this.textBoxCSVstring.TabIndex = 54;
             // 
             // label83
@@ -2838,21 +2842,11 @@
             this.label86.TabIndex = 146;
             this.label86.Text = "CSV Data Summary of SensorData";
             // 
-            // buttonCSVRefresh
-            // 
-            this.buttonCSVRefresh.Location = new System.Drawing.Point(1517, 804);
-            this.buttonCSVRefresh.Name = "buttonCSVRefresh";
-            this.buttonCSVRefresh.Size = new System.Drawing.Size(75, 23);
-            this.buttonCSVRefresh.TabIndex = 147;
-            this.buttonCSVRefresh.Text = "Refresh";
-            this.buttonCSVRefresh.UseVisualStyleBackColor = true;
-            this.buttonCSVRefresh.Click += new System.EventHandler(this.ButtonCSVRefresh_Click);
-            // 
             // textBoxTimeSysTime
             // 
             this.textBoxTimeSysTime.Location = new System.Drawing.Point(708, 837);
             this.textBoxTimeSysTime.Name = "textBoxTimeSysTime";
-            this.textBoxTimeSysTime.Size = new System.Drawing.Size(147, 22);
+            this.textBoxTimeSysTime.Size = new System.Drawing.Size(89, 22);
             this.textBoxTimeSysTime.TabIndex = 148;
             // 
             // label88
@@ -2877,7 +2871,7 @@
             // 
             this.textBoxTimeStorage.Location = new System.Drawing.Point(708, 867);
             this.textBoxTimeStorage.Name = "textBoxTimeStorage";
-            this.textBoxTimeStorage.Size = new System.Drawing.Size(147, 22);
+            this.textBoxTimeStorage.Size = new System.Drawing.Size(89, 22);
             this.textBoxTimeStorage.TabIndex = 151;
             // 
             // label90
@@ -2893,7 +2887,7 @@
             // 
             this.textBoxTimeRTC.Location = new System.Drawing.Point(708, 898);
             this.textBoxTimeRTC.Name = "textBoxTimeRTC";
-            this.textBoxTimeRTC.Size = new System.Drawing.Size(147, 22);
+            this.textBoxTimeRTC.Size = new System.Drawing.Size(89, 22);
             this.textBoxTimeRTC.TabIndex = 153;
             // 
             // label91
@@ -2905,137 +2899,346 @@
             this.label91.TabIndex = 154;
             this.label91.Text = "Time Stamp";
             // 
-            // label94
+            // label11
             // 
-            this.label94.AutoSize = true;
-            this.label94.Location = new System.Drawing.Point(5, 243);
-            this.label94.Name = "label94";
-            this.label94.Size = new System.Drawing.Size(77, 17);
-            this.label94.TabIndex = 157;
-            this.label94.Text = "margin min";
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(587, 581);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(77, 17);
+            this.label11.TabIndex = 155;
+            this.label11.Text = "OTA Reply";
             // 
-            // label95
+            // label25
             // 
-            this.label95.AutoSize = true;
-            this.label95.Location = new System.Drawing.Point(5, 266);
-            this.label95.Name = "label95";
-            this.label95.Size = new System.Drawing.Size(80, 17);
-            this.label95.TabIndex = 158;
-            this.label95.Text = "margin max";
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(587, 617);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(58, 17);
+            this.label25.TabIndex = 156;
+            this.label25.Text = "Opcode";
             // 
-            // textBoxMarginMin4
+            // label26
             // 
-            this.textBoxMarginMin4.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin4.Location = new System.Drawing.Point(294, 237);
-            this.textBoxMarginMin4.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin4.Name = "textBoxMarginMin4";
-            this.textBoxMarginMin4.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin4.TabIndex = 160;
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(826, 617);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(72, 17);
+            this.label26.TabIndex = 157;
+            this.label26.Text = "MSG Num";
+            this.label26.Click += new System.EventHandler(this.label26_Click);
             // 
-            // textBoxMarginMin2
+            // label27
             // 
-            this.textBoxMarginMin2.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin2.Location = new System.Drawing.Point(188, 237);
-            this.textBoxMarginMin2.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin2.Name = "textBoxMarginMin2";
-            this.textBoxMarginMin2.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin2.TabIndex = 159;
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(975, 617);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(48, 17);
+            this.label27.TabIndex = 158;
+            this.label27.Text = "Status";
             // 
-            // textBoxMarginMin5
+            // textBoxOR_Opcode
             // 
-            this.textBoxMarginMin5.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin5.Location = new System.Drawing.Point(348, 238);
-            this.textBoxMarginMin5.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin5.Name = "textBoxMarginMin5";
-            this.textBoxMarginMin5.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin5.TabIndex = 158;
+            this.textBoxOR_Opcode.Location = new System.Drawing.Point(657, 614);
+            this.textBoxOR_Opcode.Name = "textBoxOR_Opcode";
+            this.textBoxOR_Opcode.Size = new System.Drawing.Size(168, 22);
+            this.textBoxOR_Opcode.TabIndex = 159;
             // 
-            // textBoxMarginMin3
+            // textBoxOR_Msgnum
             // 
-            this.textBoxMarginMin3.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin3.Location = new System.Drawing.Point(244, 237);
-            this.textBoxMarginMin3.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin3.Name = "textBoxMarginMin3";
-            this.textBoxMarginMin3.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin3.TabIndex = 157;
+            this.textBoxOR_Msgnum.Location = new System.Drawing.Point(906, 614);
+            this.textBoxOR_Msgnum.Name = "textBoxOR_Msgnum";
+            this.textBoxOR_Msgnum.Size = new System.Drawing.Size(63, 22);
+            this.textBoxOR_Msgnum.TabIndex = 160;
             // 
-            // textBoxMarginMin0
+            // textBoxOR_Status
             // 
-            this.textBoxMarginMin0.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin0.Location = new System.Drawing.Point(84, 237);
-            this.textBoxMarginMin0.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin0.Name = "textBoxMarginMin0";
-            this.textBoxMarginMin0.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin0.TabIndex = 155;
+            this.textBoxOR_Status.Location = new System.Drawing.Point(1027, 614);
+            this.textBoxOR_Status.Name = "textBoxOR_Status";
+            this.textBoxOR_Status.Size = new System.Drawing.Size(35, 22);
+            this.textBoxOR_Status.TabIndex = 161;
             // 
-            // textBoxMarginMin1
+            // label28
             // 
-            this.textBoxMarginMin1.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMin1.Location = new System.Drawing.Point(134, 237);
-            this.textBoxMarginMin1.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMin1.Name = "textBoxMarginMin1";
-            this.textBoxMarginMin1.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMin1.TabIndex = 156;
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(592, 654);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(71, 17);
+            this.label28.TabIndex = 162;
+            this.label28.Text = "Clock Set:";
+            this.label28.Click += new System.EventHandler(this.label28_Click);
             // 
-            // textBoxMarginMax4
+            // textBoxOR_Accept
             // 
-            this.textBoxMarginMax4.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax4.Location = new System.Drawing.Point(294, 261);
-            this.textBoxMarginMax4.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax4.Name = "textBoxMarginMax4";
-            this.textBoxMarginMax4.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax4.TabIndex = 166;
+            this.textBoxOR_Accept.Location = new System.Drawing.Point(721, 651);
+            this.textBoxOR_Accept.Name = "textBoxOR_Accept";
+            this.textBoxOR_Accept.Size = new System.Drawing.Size(42, 22);
+            this.textBoxOR_Accept.TabIndex = 163;
             // 
-            // textBoxMarginMax2
+            // label96
             // 
-            this.textBoxMarginMax2.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax2.Location = new System.Drawing.Point(188, 261);
-            this.textBoxMarginMax2.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax2.Name = "textBoxMarginMax2";
-            this.textBoxMarginMax2.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax2.TabIndex = 165;
+            this.label96.AutoSize = true;
+            this.label96.Location = new System.Drawing.Point(667, 654);
+            this.label96.Name = "label96";
+            this.label96.Size = new System.Drawing.Size(51, 17);
+            this.label96.TabIndex = 164;
+            this.label96.Text = "Accept";
             // 
-            // textBoxMarginMax5
+            // label97
             // 
-            this.textBoxMarginMax5.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax5.Location = new System.Drawing.Point(348, 262);
-            this.textBoxMarginMax5.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax5.Name = "textBoxMarginMax5";
-            this.textBoxMarginMax5.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax5.TabIndex = 164;
+            this.label97.AutoSize = true;
+            this.label97.Location = new System.Drawing.Point(770, 654);
+            this.label97.Name = "label97";
+            this.label97.Size = new System.Drawing.Size(33, 17);
+            this.label97.TabIndex = 165;
+            this.label97.Text = "Day";
             // 
-            // textBoxMarginMax3
+            // label98
             // 
-            this.textBoxMarginMax3.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax3.Location = new System.Drawing.Point(244, 261);
-            this.textBoxMarginMax3.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax3.Name = "textBoxMarginMax3";
-            this.textBoxMarginMax3.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax3.TabIndex = 163;
+            this.label98.AutoSize = true;
+            this.label98.Location = new System.Drawing.Point(854, 655);
+            this.label98.Name = "label98";
+            this.label98.Size = new System.Drawing.Size(39, 17);
+            this.label98.TabIndex = 166;
+            this.label98.Text = "Hour";
             // 
-            // textBoxMarginMax0
+            // label99
             // 
-            this.textBoxMarginMax0.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax0.Location = new System.Drawing.Point(84, 261);
-            this.textBoxMarginMax0.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax0.Name = "textBoxMarginMax0";
-            this.textBoxMarginMax0.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax0.TabIndex = 161;
+            this.label99.AutoSize = true;
+            this.label99.Location = new System.Drawing.Point(928, 654);
+            this.label99.Name = "label99";
+            this.label99.Size = new System.Drawing.Size(30, 17);
+            this.label99.TabIndex = 167;
+            this.label99.Text = "Min";
             // 
-            // textBoxMarginMax1
+            // label100
             // 
-            this.textBoxMarginMax1.BackColor = System.Drawing.SystemColors.Window;
-            this.textBoxMarginMax1.Location = new System.Drawing.Point(134, 261);
-            this.textBoxMarginMax1.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxMarginMax1.Name = "textBoxMarginMax1";
-            this.textBoxMarginMax1.Size = new System.Drawing.Size(45, 22);
-            this.textBoxMarginMax1.TabIndex = 162;
+            this.label100.AutoSize = true;
+            this.label100.Location = new System.Drawing.Point(994, 654);
+            this.label100.Name = "label100";
+            this.label100.Size = new System.Drawing.Size(32, 17);
+            this.label100.TabIndex = 168;
+            this.label100.Text = "Sec";
+            // 
+            // textBoxOR_Gmtday
+            // 
+            this.textBoxOR_Gmtday.Location = new System.Drawing.Point(806, 651);
+            this.textBoxOR_Gmtday.Name = "textBoxOR_Gmtday";
+            this.textBoxOR_Gmtday.Size = new System.Drawing.Size(42, 22);
+            this.textBoxOR_Gmtday.TabIndex = 169;
+            // 
+            // textBoxOR_Gmthour
+            // 
+            this.textBoxOR_Gmthour.Location = new System.Drawing.Point(893, 651);
+            this.textBoxOR_Gmthour.Name = "textBoxOR_Gmthour";
+            this.textBoxOR_Gmthour.Size = new System.Drawing.Size(29, 22);
+            this.textBoxOR_Gmthour.TabIndex = 170;
+            // 
+            // textBoxOR_Gmtmin
+            // 
+            this.textBoxOR_Gmtmin.Location = new System.Drawing.Point(957, 651);
+            this.textBoxOR_Gmtmin.Name = "textBoxOR_Gmtmin";
+            this.textBoxOR_Gmtmin.Size = new System.Drawing.Size(31, 22);
+            this.textBoxOR_Gmtmin.TabIndex = 171;
+            // 
+            // textBoxOR_Gmtsec
+            // 
+            this.textBoxOR_Gmtsec.Location = new System.Drawing.Point(1031, 651);
+            this.textBoxOR_Gmtsec.Name = "textBoxOR_Gmtsec";
+            this.textBoxOR_Gmtsec.Size = new System.Drawing.Size(31, 22);
+            this.textBoxOR_Gmtsec.TabIndex = 172;
+            // 
+            // label101
+            // 
+            this.label101.AutoSize = true;
+            this.label101.Location = new System.Drawing.Point(805, 689);
+            this.label101.Name = "label101";
+            this.label101.Size = new System.Drawing.Size(43, 17);
+            this.label101.TabIndex = 173;
+            this.label101.Text = "Align:";
+            // 
+            // textBoxOR_Alignsec
+            // 
+            this.textBoxOR_Alignsec.Location = new System.Drawing.Point(1032, 686);
+            this.textBoxOR_Alignsec.Name = "textBoxOR_Alignsec";
+            this.textBoxOR_Alignsec.Size = new System.Drawing.Size(31, 22);
+            this.textBoxOR_Alignsec.TabIndex = 179;
+            // 
+            // textBoxOR_Alignmin
+            // 
+            this.textBoxOR_Alignmin.Location = new System.Drawing.Point(958, 686);
+            this.textBoxOR_Alignmin.Name = "textBoxOR_Alignmin";
+            this.textBoxOR_Alignmin.Size = new System.Drawing.Size(31, 22);
+            this.textBoxOR_Alignmin.TabIndex = 178;
+            // 
+            // textBoxOR_Alignhour
+            // 
+            this.textBoxOR_Alignhour.Location = new System.Drawing.Point(894, 686);
+            this.textBoxOR_Alignhour.Name = "textBoxOR_Alignhour";
+            this.textBoxOR_Alignhour.Size = new System.Drawing.Size(29, 22);
+            this.textBoxOR_Alignhour.TabIndex = 177;
+            // 
+            // label102
+            // 
+            this.label102.AutoSize = true;
+            this.label102.Location = new System.Drawing.Point(995, 689);
+            this.label102.Name = "label102";
+            this.label102.Size = new System.Drawing.Size(32, 17);
+            this.label102.TabIndex = 176;
+            this.label102.Text = "Sec";
+            // 
+            // label103
+            // 
+            this.label103.AutoSize = true;
+            this.label103.Location = new System.Drawing.Point(929, 689);
+            this.label103.Name = "label103";
+            this.label103.Size = new System.Drawing.Size(30, 17);
+            this.label103.TabIndex = 175;
+            this.label103.Text = "Min";
+            // 
+            // label104
+            // 
+            this.label104.AutoSize = true;
+            this.label104.Location = new System.Drawing.Point(855, 690);
+            this.label104.Name = "label104";
+            this.label104.Size = new System.Drawing.Size(39, 17);
+            this.label104.TabIndex = 174;
+            this.label104.Text = "Hour";
+            // 
+            // textBoxOR_Tranrate
+            // 
+            this.textBoxOR_Tranrate.Location = new System.Drawing.Point(721, 688);
+            this.textBoxOR_Tranrate.Name = "textBoxOR_Tranrate";
+            this.textBoxOR_Tranrate.Size = new System.Drawing.Size(42, 22);
+            this.textBoxOR_Tranrate.TabIndex = 180;
+            // 
+            // label105
+            // 
+            this.label105.AutoSize = true;
+            this.label105.Location = new System.Drawing.Point(647, 691);
+            this.label105.Name = "label105";
+            this.label105.Size = new System.Drawing.Size(72, 17);
+            this.label105.TabIndex = 181;
+            this.label105.Text = "Tran Rate";
+            // 
+            // textBoxOR_Reqtype
+            // 
+            this.textBoxOR_Reqtype.Location = new System.Drawing.Point(721, 723);
+            this.textBoxOR_Reqtype.Name = "textBoxOR_Reqtype";
+            this.textBoxOR_Reqtype.Size = new System.Drawing.Size(173, 22);
+            this.textBoxOR_Reqtype.TabIndex = 182;
+            // 
+            // label106
+            // 
+            this.label106.AutoSize = true;
+            this.label106.Location = new System.Drawing.Point(622, 726);
+            this.label106.Name = "label106";
+            this.label106.Size = new System.Drawing.Size(97, 17);
+            this.label106.TabIndex = 183;
+            this.label106.Text = "Request Type";
+            // 
+            // label107
+            // 
+            this.label107.AutoSize = true;
+            this.label107.Location = new System.Drawing.Point(909, 726);
+            this.label107.Name = "label107";
+            this.label107.Size = new System.Drawing.Size(38, 17);
+            this.label107.TabIndex = 184;
+            this.label107.Text = "Data";
+            // 
+            // textBoxOR_Reqdata
+            // 
+            this.textBoxOR_Reqdata.Location = new System.Drawing.Point(949, 724);
+            this.textBoxOR_Reqdata.Name = "textBoxOR_Reqdata";
+            this.textBoxOR_Reqdata.Size = new System.Drawing.Size(82, 22);
+            this.textBoxOR_Reqdata.TabIndex = 185;
+            // 
+            // textBoxOR_Errcode
+            // 
+            this.textBoxOR_Errcode.Location = new System.Drawing.Point(721, 760);
+            this.textBoxOR_Errcode.Name = "textBoxOR_Errcode";
+            this.textBoxOR_Errcode.Size = new System.Drawing.Size(341, 22);
+            this.textBoxOR_Errcode.TabIndex = 187;
+            // 
+            // label108
+            // 
+            this.label108.AutoSize = true;
+            this.label108.Location = new System.Drawing.Point(641, 763);
+            this.label108.Name = "label108";
+            this.label108.Size = new System.Drawing.Size(77, 17);
+            this.label108.TabIndex = 186;
+            this.label108.Text = "Error Code";
+            // 
+            // textBoxOR_Msgcrc
+            // 
+            this.textBoxOR_Msgcrc.Location = new System.Drawing.Point(851, 790);
+            this.textBoxOR_Msgcrc.Name = "textBoxOR_Msgcrc";
+            this.textBoxOR_Msgcrc.Size = new System.Drawing.Size(63, 22);
+            this.textBoxOR_Msgcrc.TabIndex = 189;
+            // 
+            // label109
+            // 
+            this.label109.AutoSize = true;
+            this.label109.Location = new System.Drawing.Point(783, 793);
+            this.label109.Name = "label109";
+            this.label109.Size = new System.Drawing.Size(66, 17);
+            this.label109.TabIndex = 188;
+            this.label109.Text = "Msg CRC";
+            // 
+            // textBoxOR_Calccrc
+            // 
+            this.textBoxOR_Calccrc.Location = new System.Drawing.Point(998, 790);
+            this.textBoxOR_Calccrc.Name = "textBoxOR_Calccrc";
+            this.textBoxOR_Calccrc.Size = new System.Drawing.Size(63, 22);
+            this.textBoxOR_Calccrc.TabIndex = 191;
+            // 
+            // label110
+            // 
+            this.label110.AutoSize = true;
+            this.label110.Location = new System.Drawing.Point(930, 793);
+            this.label110.Name = "label110";
+            this.label110.Size = new System.Drawing.Size(67, 17);
+            this.label110.TabIndex = 190;
+            this.label110.Text = "Calc CRC";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1639, 967);
+            this.Controls.Add(this.textBoxOR_Calccrc);
+            this.Controls.Add(this.label110);
+            this.Controls.Add(this.textBoxOR_Msgcrc);
+            this.Controls.Add(this.label109);
+            this.Controls.Add(this.textBoxOR_Errcode);
+            this.Controls.Add(this.label108);
+            this.Controls.Add(this.textBoxOR_Reqdata);
+            this.Controls.Add(this.label107);
+            this.Controls.Add(this.textBoxOR_Reqtype);
+            this.Controls.Add(this.label106);
+            this.Controls.Add(this.textBoxOR_Tranrate);
+            this.Controls.Add(this.label105);
+            this.Controls.Add(this.textBoxOR_Alignsec);
+            this.Controls.Add(this.textBoxOR_Alignmin);
+            this.Controls.Add(this.textBoxOR_Alignhour);
+            this.Controls.Add(this.label102);
+            this.Controls.Add(this.label103);
+            this.Controls.Add(this.label104);
+            this.Controls.Add(this.label101);
+            this.Controls.Add(this.textBoxOR_Gmtsec);
+            this.Controls.Add(this.textBoxOR_Gmtmin);
+            this.Controls.Add(this.textBoxOR_Gmthour);
+            this.Controls.Add(this.textBoxOR_Gmtday);
+            this.Controls.Add(this.label100);
+            this.Controls.Add(this.label99);
+            this.Controls.Add(this.label97);
+            this.Controls.Add(this.textBoxOR_Accept);
+            this.Controls.Add(this.textBoxOR_Status);
+            this.Controls.Add(this.textBoxOR_Msgnum);
+            this.Controls.Add(this.textBoxOR_Opcode);
+            this.Controls.Add(this.label27);
+            this.Controls.Add(this.label26);
+            this.Controls.Add(this.label25);
+            this.Controls.Add(this.label11);
             this.Controls.Add(this.label91);
             this.Controls.Add(this.textBoxTimeRTC);
             this.Controls.Add(this.label90);
@@ -3043,7 +3246,6 @@
             this.Controls.Add(this.label89);
             this.Controls.Add(this.label88);
             this.Controls.Add(this.textBoxTimeSysTime);
-            this.Controls.Add(this.buttonCSVRefresh);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label86);
             this.Controls.Add(this.textBoxCSVhour);
@@ -3062,13 +3264,13 @@
             this.Controls.Add(this.groupBox9);
             this.Controls.Add(this.groupBox8);
             this.Controls.Add(this.groupBox6);
-            this.Controls.Add(this.groupBox5);
-            this.Controls.Add(this.checkBoxNewGPS);
-            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.label96);
+            this.Controls.Add(this.label28);
+            this.Controls.Add(this.label98);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Charity Water Message Decode Utility";
@@ -3080,10 +3282,6 @@
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
             this.groupBox8.ResumeLayout(false);
@@ -3134,21 +3332,6 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.TextBox textBoxTransRateDays;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.CheckBox checkBoxNewGPS;
-        private System.Windows.Forms.CheckBox checkBoxExistingGPS;
-        private System.Windows.Forms.TextBox textBoxGPSRequest;
-        private System.Windows.Forms.Label label25;
-        private System.Windows.Forms.GroupBox groupBox5;
-        private System.Windows.Forms.TextBox textBoxGPSMC_Message;
-        private System.Windows.Forms.Label label28;
-        private System.Windows.Forms.TextBox textBoxMeasTime;
-        private System.Windows.Forms.TextBox textBoxHDOP;
-        private System.Windows.Forms.TextBox textBoxSatellite;
-        private System.Windows.Forms.Label label27;
-        private System.Windows.Forms.Label label26;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Button buttonGPS_Criteria;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.GroupBox groupBox8;
         private System.Windows.Forms.TextBox textBoxSOS_CRC;
@@ -3376,6 +3559,44 @@
         private System.Windows.Forms.TextBox textBoxMarginMin3;
         private System.Windows.Forms.TextBox textBoxMarginMin0;
         private System.Windows.Forms.TextBox textBoxMarginMin1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox textBoxOR_Opcode;
+        private System.Windows.Forms.TextBox textBoxOR_Msgnum;
+        private System.Windows.Forms.TextBox textBoxOR_Status;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.TextBox textBoxOR_Accept;
+        private System.Windows.Forms.Label label96;
+        private System.Windows.Forms.Label label97;
+        private System.Windows.Forms.Label label98;
+        private System.Windows.Forms.Label label99;
+        private System.Windows.Forms.Label label100;
+        private System.Windows.Forms.TextBox textBoxOR_Gmtday;
+        private System.Windows.Forms.TextBox textBoxOR_Gmthour;
+        private System.Windows.Forms.TextBox textBoxOR_Gmtmin;
+        private System.Windows.Forms.TextBox textBoxOR_Gmtsec;
+        private System.Windows.Forms.Label label101;
+        private System.Windows.Forms.TextBox textBoxOR_Alignsec;
+        private System.Windows.Forms.TextBox textBoxOR_Alignmin;
+        private System.Windows.Forms.TextBox textBoxOR_Alignhour;
+        private System.Windows.Forms.Label label102;
+        private System.Windows.Forms.Label label103;
+        private System.Windows.Forms.Label label104;
+        private System.Windows.Forms.TextBox textBoxOR_Tranrate;
+        private System.Windows.Forms.Label label105;
+        private System.Windows.Forms.TextBox textBoxOR_Reqtype;
+        private System.Windows.Forms.Label label106;
+        private System.Windows.Forms.Label label107;
+        private System.Windows.Forms.TextBox textBoxOR_Reqdata;
+        private System.Windows.Forms.TextBox textBoxOR_Errcode;
+        private System.Windows.Forms.Label label108;
+        private System.Windows.Forms.TextBox textBoxOR_Msgcrc;
+        private System.Windows.Forms.Label label109;
+        private System.Windows.Forms.TextBox textBoxOR_Calccrc;
+        private System.Windows.Forms.Label label110;
     }
 }
 
