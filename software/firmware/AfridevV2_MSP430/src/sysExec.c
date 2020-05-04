@@ -166,7 +166,6 @@ void sysExec_exec(void)
     // Set how long to wait until first startup message should be transmitted
     sysExecData.secondsTillStartUpMsgTx = START_UP_MSG_TX_DELAY_IN_SECONDS;
     sysExecData.dry_wake_time = SYSEXEC_NO_WATER_SLEEP_DELAY;
-    sysExecData.margin_limit = SYSEXEC_MARGIN_LIMIT;
 
     // Initialize the date for Jan 1, 2018
     // h, m, s, am/pm (must be in BCD)
@@ -257,13 +256,10 @@ void sysExec_exec(void)
         // time elapsed is set when the unit slept for 20 seconds
         if (exec_main_loop_counter >= TICKS_PER_TREND || sysExecData.last_sleep_time)
         {
-            // up to 2 seconds elapsed since last action (sleep or awake) add to sleep time and
-            // clear the loop counter
-            sysExecData.last_sleep_time += exec_main_loop_counter/2;
             exec_main_loop_counter = 0;
 
             // only do water measurements when not sleeping
-            if (sysExecData.last_sleep_time <= 2)
+            if (!sysExecData.last_sleep_time)
             {
                 temperature_loop_counter++;
 
@@ -308,7 +304,11 @@ void sysExec_exec(void)
             }
 
             // Record the water stats and initiate periodic communication
-            storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.last_sleep_time);
+            if (sysExecData.last_sleep_time)
+               storageMgr_exec(currentFlowRateInMLPerSec, sysExecData.last_sleep_time);
+            else
+               storageMgr_exec(currentFlowRateInMLPerSec, 2);
+
             // prepare for next iteration of this loop to be sure water measurements are made
             sysExecData.last_sleep_time = 0;
 
@@ -432,9 +432,10 @@ void sysExec_exec(void)
                 sysExec_sendDebugDataToUart();
             }
 #endif
+            sysExecData.last_sleep_time = lowPowerMode_check(currentFlowRateInMLPerSec);  //every 2 seconds
+
         } // every 4 clock ticks
 
-        sysExecData.last_sleep_time = lowPowerMode_check(currentFlowRateInMLPerSec);  //every clock tick
     } // end while 1
 }
 
@@ -680,8 +681,11 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
 {
     static volatile int blink_red = 0;
     uint8_t time_elapsed  = 0;
+    uint8_t pending_rtc_seconds;
+    uint16_t wait_fail_safe = 0;
 
-    if (sysExecData.dry_wake_time > 0)
+    // the dry wake time is subtracted by 8 below, this must be set above 8 by 2
+    if (sysExecData.dry_wake_time > 10)
     {
         // do not go to sleep if the modem is busy with updates or send test. or the gps is measuring
          if (sysExecData.send_test_result != SYSEXEC_SEND_TEST_RUNNING && !gps_isActive() && !modemMgr_isAllocated())
@@ -698,11 +702,9 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                 else
                 {
                    // capsense interrupts would wake this instantly wait until the sensing is done 
-                   if (sysExecData.dry_count++ > sysExecData.dry_wake_time && !CAPSENSE_ACTIVE)
+                   sysExecData.dry_count+=2;
+                   if (sysExecData.dry_count > sysExecData.dry_wake_time && !CAPSENSE_ACTIVE)
                    {
-                       // keep track of consecutive sleeps, if > 5 add a second to the time
-                       sysExecData.sleep_count++;
-                       sysExecData.sleep_alot++;
 #ifdef SLEEP_DEBUG
                        //hal_led_red();  // for debug only - red LED to indicate sleep
                        //sysExecData.led_on_time = 0;  // prevent the manufRecord_update_LEDs() from clearing the toggle
@@ -713,33 +715,43 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec)
                        // do the 20 second sleep!  First clear out pending debug messages
                        while(!dbg_uart_txqempty());  // send the rest of the debug data
                        while(dbg_uart_txpend());     // wait for the last character to be consumed
-                       _delay_cycles(2000);          // wait one character time afterwards so the terminal is not confused
+                       _delay_cycles(DELAY_2_MSEC);  // wait one character time afterwards so the terminal is not confused
 #endif
                        WATCHDOG_STOP();
-
-                       timerA0_20sec_sleep();
-                       hal_low_power_enter();
-                       timerA0_inter_sample_sleep();
-                       // correct inaccuracy in RTC due to sleeping
-                       // every 160 seconds (8*20), add 2 seconds
-                       if (sysExecData.sleep_count>=8);
-                       {
-                           all_timers_adjust_time(2);
-                           sysExecData.sleep_count = 0;
+#if 1
+                       time_request_sleep();
+                       // wait up to 1.1 seconds for the sleep to take effect (synchronized 
+                       // with the next clock tick).  This prevents making bricks if something
+                       // goes wrong
+                       wait_fail_safe = SLEEP_WAIT_TIME;
+                       while(time_pending_sleep()&& wait_fail_safe){
+                           _delay_cycles(DELAY_1_MSEC);
+                           wait_fail_safe--;   
                        }
-                       // every 1200 seconds (60*20), add 3 seconds
-                       if (sysExecData.sleep_alot>=60)
+                       // only sleep if the ISR sets the sleep within the expected time
+                       
+                       if (wait_fail_safe > 0)
                        {
-                           all_timers_adjust_time(3);
-                           sysExecData.sleep_alot = 0;
+                           hal_low_power_enter();        // do the sleeping
                        }
-                       for (time_elapsed = 0; time_elapsed < 20; time_elapsed++)
+#else
+                       // wait 40 half second intervals
+                       for(i=0;i<40;i++)
+                       {
+                           _delay_cycles(DELAY_HALF_SEC);
+                           WATCHDOG_TICKLE();
+                       }
+                       sysExecData.sleep_count = 0;
+                       sysExecData.sleep_alot = 0;
+#endif
+                       pending_rtc_seconds = getPendingRTC_Seconds();
+                       for (time_elapsed = 0; time_elapsed < pending_rtc_seconds; time_elapsed++)
                           incrementSeconds();
+                       clearPendingRTC_Seconds();
                        WATCHDOG_TICKLE();
 
-                       // this keeps the unit in "dry mode" without overflowing the counter (if dry a long time > 9 hours)
-                       sysExecData.dry_count = sysExecData.dry_wake_time + 1;
-                       time_elapsed = 20;
+                       // this keeps the unit in "dry mode" at least 4 more seconds before sleeping again
+                       sysExecData.dry_count = sysExecData.dry_wake_time - 8;
                    }
                    else
                        hal_led_none();

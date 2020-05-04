@@ -51,7 +51,7 @@
 //#define TRICKLE_VOLUME_ELIMINATE 1
 //#define SEND_DEBUG_TIME_DATA 1
 //#define MANUF_RESTORE_BASELINE_TARGETS
-//#define MARGIN_LIMIT_CHECKS 1
+#define REDFLAG_VERSION 2
 #endif
 /**
  * \def TICKS_PER_TREND
@@ -107,7 +107,7 @@
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 0x12
+#define FW_MINOR 28
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
@@ -224,6 +224,30 @@ typedef uint32_t sys_tick_t;
  * \brief Macro to specify the number of seconds in 10 minutes
  */
 #define TIME_20_MINUTES ((uint16_t)(SEC_PER_MINUTE*(uint16_t)20))
+
+/**
+ * \def SLEEP_WAIT_TIME
+ * \brief Maximum time to wait for ISR to initiate sleep period
+ */
+#define SLEEP_WAIT_TIME  ((uint16_t)1100)
+
+/**
+ * \def DELAY_1_MSEC
+ * \brief Number of delay cycles for 1 mSec
+ */
+#define DELAY_1_MSEC     (1000)
+
+/**
+ * \def DELAY_2_MSEC
+ * \brief Number of delay cycles for 2 mSec
+ */
+#define DELAY_2_MSEC     (2*DELAY_1_MSEC)
+
+/**
+ * \def DELAY_HALF_SEC
+ * \brief Number of delay cycles for 500 mSec
+ */
+#define DELAY_HALF_SEC   (500*DELAY_1_MSEC)
 
 /**
  * \typedef padId_t
@@ -356,7 +380,6 @@ typedef struct sysExecData_s {
     uint16_t downspout_rate;                               /**< Maximum downspout rate setting for tuning accuracy based on board thickness */
     uint16_t dry_count;                                    /**< Current number of consecutive trends with no water */
     uint16_t dry_wake_time;                                /**< Number of consecutive trends with no water before sleeping */
-    uint16_t margin_limit;                                 /**< Number of margin count difference between min and max for unit to be operational */
     bool FAMsgWasSent : 1;                                 /**< Flag specifying if Final Assembly msg was sent */
     bool mCheckInMsgWasSent : 1;                           /**< Flag specifying if Monthly Check In msg was sent */
     bool appRecordWasSet: 1;                               /**< Flag specifying if App record was set */
@@ -367,7 +390,6 @@ typedef struct sysExecData_s {
     bool sendSensorDataNow: 1;                             /**< flag specifying that water data is immediately reported over Modem */
     bool faultWaterDetect: 1;                              /**< flag specifying that water water or unknowns are stuck  */
     bool sendTimeStamp: 1;                                 /**< flag specifying that the hourly time data needs to be sent */
-    bool waterDetectStopped: 1;                            /**< flag specifying that water detection has been stopped */
     uint8_t waterDetectResets;                             /**< number of times the water detect algorithm data was cleared */
     uint8_t send_test_result;                              /**< result of sending the SEND_TEST message to the Modem */
     uint8_t led_on_time;                                   /**< number of iterations of the main loop that LED should remain on (2 sec resolution) */
@@ -408,12 +430,6 @@ void sysError(void);
 #else
 #define SYSEXEC_NO_WATER_SLEEP_DELAY 60
 #endif
-#endif
-
-#ifdef MARGIN_LIMIT_CHECKS
-#define SYSEXEC_MARGIN_LIMIT 400
-#else
-#define SYSEXEC_MARGIN_LIMIT 65535
 #endif
 
 extern sysExecData_t sysExecData;
@@ -752,7 +768,6 @@ bool otaMsgMgr_isOtaProcessingDone(void);
 #define SENSOR_SET_WATER_LIMIT 6
 #define SENSOR_SET_WAKE_TIME 7
 #define SENSOR_NOP_RESPONSE 8
-#define SENSOR_MARGIN_GROW 9
 
 /*******************************************************************************
 * msgOtaUpgrade.c
@@ -850,6 +865,10 @@ void all_timers_adjust_time(uint8_t adjustment);
 void getBinTime(timePacket_t *tpP);
 uint8_t bcd_to_char(uint8_t bcdValue);
 uint32_t getSecondsSinceBoot(void);
+uint8_t getPendingRTC_Seconds(void);
+void clearPendingRTC_Seconds(void);
+void time_request_sleep(void);
+bool time_pending_sleep(void);
 
 // Watchdog Macros
 // 1 second time out, uses ACLK
@@ -967,12 +986,6 @@ typedef struct storageData_s {
     uint8_t storageTime_week;                              /**< Current storage time - week */
     uint8_t curWeeklyLogNum;                               /**< Current weekly flash log number we are storing to */
 
-    bool alignStorageFlag;                                 /**< True if time to align storage time */
-    uint8_t alignSecond;                                   /**< Time to align at - sec */
-    uint8_t alignMinute;                                   /**< Time to align at - min */
-    uint8_t alignHour24;                                   /**< Time to align at - hour */
-    int32_t alignSafetyCheckInSec;                         /**< Max time to wait for an align event */
-
     bool redFlagCondition;                                 /**< flag for red flag condition */
     uint8_t redFlagDayCount;                               /**< running count of red flag days */
     uint8_t redFlagMapDay;                                 /**< used as index for red flag init mapping */
@@ -1011,7 +1024,9 @@ void storageMgr_resetRedFlag(void);
 bool storageMgr_getRedFlagConditionStatus(void);
 void storageMgr_resetRedFlagAndMap(void);
 void storageMgr_resetWeeklyLogs(void);
-void storageMgr_setStorageAlignmentTime(uint8_t alignSecond, uint8_t alignMinute, uint8_t alignHour24);
+void storageMgr_syncStorageTime(uint8_t rtc_Second, uint8_t rtc_Minute, uint8_t rtc_Hour24);
+void storageMgr_setStorageTime(uint8_t rtcSecond, uint8_t rtcMinute, uint8_t rtcHour24);
+void storageMgr_adjustStorageTime(uint8_t hours24Offset);
 void storageMgr_setTransmissionRate(uint8_t transmissionRateInDays);
 uint16_t storageMgr_getNextDailyLogToTransmit(uint8_t **dataPP);
 void storageMgr_sendDebugDataToUart(void);

@@ -69,6 +69,9 @@
 *        interrupt routine.
 */
 static volatile uint32_t seconds_since_boot;
+static volatile uint8_t pending_rtc_seconds;
+static volatile bool pending_sleep_request;
+static volatile bool sleep_in_progress;
 
 /**
 * \var ticks_per_second
@@ -77,7 +80,6 @@ static volatile uint32_t seconds_since_boot;
 *        occurred.
 */
 static volatile uint8_t ticks_per_second;
-static volatile uint8_t seconds_per_sleep;
 
 /**
 * \brief Initialize and start timerA0 for the one second system 
@@ -97,7 +99,9 @@ void timerA0_init(void)
 
     ticks_per_second = 0;
     seconds_since_boot = 0;
-    seconds_per_sleep = 0;
+    pending_rtc_seconds = 0;
+    pending_sleep_request = false;
+    sleep_in_progress = false;
 }
 
 /**
@@ -115,12 +119,30 @@ void all_timers_adjust_time(uint8_t adjustment)
 }
 
 /**
+* \brief Request a system sleep that is initiated by the ISR
+* \ingroup PUBLIC_API
+*/
+void time_request_sleep(void)
+{
+    pending_sleep_request = true;  
+}
+
+/**
+* \brief Request a system sleep that is initiated by the ISR
+* \ingroup PUBLIC_API
+*/
+bool time_pending_sleep(void) 
+{
+    return (pending_sleep_request);  
+}
+
+
+/**
 * \brief Set the timer interrupt frequency for low frequency samples
 * \ingroup PUBLIC_API
 */
 void timerA0_20sec_sleep(void)
 {
-	__disable_interrupt();
     UC0IE &= ~UCA0TXIE;       // Disable USCI_A0 TX interrupt
     BCSCTL1 |= DIVA_3;                                     // ACLK/8 [ACLK/(0:1,1:2,2:4,3:8)]
     BCSCTL2 = 0;                                           // SMCLK [SMCLK/(0:1,1:2,2:4,3:8)]
@@ -130,10 +152,6 @@ void timerA0_20sec_sleep(void)
     TA0CTL = TASSEL_1 + ID_3 + MC_1 + TACLR;
     TA0CCTL0 &= ~CCIFG;
     TA0CCTL0 |= CCIE;
-    ticks_per_second = 0;
-    seconds_per_sleep = 20;
-
-    __enable_interrupt();
 }
 
 /**
@@ -142,24 +160,46 @@ void timerA0_20sec_sleep(void)
 */
 void timerA0_inter_sample_sleep(void)
 {
-	__disable_interrupt();
     UC0IE |= UCA0TXIE;       // Re-Enable USCI_A0 TX interrupt
-
     BCSCTL1 &= ~DIVA_3;
     BCSCTL1 |= DIVA_0;                                     // ACLK/1 [ACLK/(0:1,1:2,2:4,3:8)]
     BCSCTL2 = 0;                                           // SMCLK [SMCLK/(0:1,1:2,2:4,3:8)]
     BCSCTL3 |= LFXT1S_0; // | XCAP_2;                          // LFXT1S0 32768-Hz crystal on LFXT1
 
 	TA0CCR0 = 16384-1; // 32786Hz/16384=2HZ
-
     TA0CTL = TASSEL_1 + ID_0 + MC_1 + TACLR;
     TA0CCTL0 &= ~CCIFG;
     TA0CCTL0 |= CCIE;
-    ticks_per_second = 0;
-    seconds_per_sleep = 0;
+}
 
+/**
+* \brief Retrieve the seconds the RTC must be updated.
+* \ingroup PUBLIC_API
+*
+* @return uint8_t 8 bit values representing number of rtc seconds not incremented
+*/
+uint8_t getPendingRTC_Seconds(void)
+{
+	uint8_t answer;
+	__disable_interrupt();
+    answer = pending_rtc_seconds;
+    __enable_interrupt();
+    return (answer);
+}
+
+/**
+* \brief clear the seconds the RTC must be updated.
+* \ingroup PUBLIC_API
+*
+*/
+void clearPendingRTC_Seconds(void)
+{
+	__disable_interrupt();
+    pending_rtc_seconds = 0;
     __enable_interrupt();
 }
+
+
 /**
 * \brief Retrieve the seconds since boot system value.
 * \ingroup PUBLIC_API
@@ -183,17 +223,13 @@ uint32_t getSecondsSinceBoot(void)
 #endif
 __interrupt void ISR_Timer0_A0(void)
 {
-    //  testing
-    //  dbg_line[0]='#';
-    //  dbg_uart_write(dbg_line, 1);
 
     TA0CTL |= TACLR;
 
-    // Increment on every interrupt
-    ++ticks_per_second;
-
-    if (!seconds_per_sleep)
+    if (!sleep_in_progress)
     {
+        ++ticks_per_second;
+        
         // Check if we have reached one second
         if (ticks_per_second >= TIMER_INTERRUPTS_PER_SECOND)
         {
@@ -203,14 +239,33 @@ __interrupt void ISR_Timer0_A0(void)
             seconds_since_boot += 1;
             // Zero
             ticks_per_second = 0;
+            
+            // only implement sleep on a second boundary
+            if (pending_sleep_request)
+            {
+                // the next interrupt will be 20 seconds later
+                timerA0_20sec_sleep();
+                // signal foreground to enter low power mode
+                pending_sleep_request = false;
+                sleep_in_progress = true;
+            }                   
         }
     }
     else
     {
-        // Increment the seconds counter
-        seconds_since_boot += seconds_per_sleep;
-    }
+        // Increment the seconds counter for sleep time
+        // and put the timer back to half second accuracy
+        seconds_since_boot += TIME_20_SECONDS;
+        
+        // prevent overflow, the interrupt keeps going, but the foreground might get delayed
+        if (pending_rtc_seconds <= 220)
+           pending_rtc_seconds += TIME_20_SECONDS;
 
+        // put clock back to 2Hz ticks
+        timerA0_inter_sample_sleep();
+        sleep_in_progress = false;      
+    }
+    
     // DDL Notes - Clear the low power mode bits on exit so that the MSP430 will come out of sleep
     // on the exit of the ISR.  GIE should already be set on exit.
     __bic_SR_register_on_exit(LPM3_bits);

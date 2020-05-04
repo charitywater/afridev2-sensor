@@ -29,7 +29,6 @@
      uint16_t water_limit;
      uint16_t water_resets;
      uint16_t trickleVolume;
-     uint16_t margin_growth;
  } manufRecord_sensor_T;
 
 /****************************
@@ -261,7 +260,7 @@ bool manufRecord_setBaselineAirTargets(void) {
 #ifdef WATER_DEBUG
 				debug_message("***AIR Targets Set From Baseline***");
 				__delay_cycles(1000);
-			    debug_padSummary(sys_time, 0, 0, 0, 1, 0xffff, 0xffff);
+			    debug_padSummary(sys_time, 0, 0, 0, 1, 0xffff);
 				__delay_cycles(1000);
 				debug_chgSummary(sys_time);
 				__delay_cycles(1000);
@@ -278,7 +277,7 @@ bool manufRecord_setBaselineAirTargets(void) {
 	{
 		debug_message("***AIR Targets Set Now***");
 		__delay_cycles(1000);
-		debug_padSummary(sys_time, 0, 0, 0, 1, 0xffff, 0xffff);
+		debug_padSummary(sys_time, 0, 0, 0, 1, 0xffff);
 		__delay_cycles(1000);
 		waterDetect_record_pads_baseline();
 		answer = true;

@@ -308,32 +308,26 @@ uint8_t waterSense_analyzeData(uint8_t num_samples)
     {
         padStats.lastMeasFlowRateInMl = waterDetect_get_flow_rate(numOfSubmergedPads, &percentile);
 
-	    if (!sysExecData.waterDetectStopped)
-	    {
 #ifndef TRICKLE_VOLUME_ELIMINATE
-	        waterSense_trickeVolume(percentile, numOfSubmergedPads);
+        waterSense_trickeVolume(percentile, numOfSubmergedPads);
 #endif
-	        sysExecData.total_flow += padStats.lastMeasFlowRateInMl;
-	        padStats.sequential_waters++;
+        sysExecData.total_flow += padStats.lastMeasFlowRateInMl;
+        padStats.sequential_waters++;
 
-	        // prevent stuck on from occurring.. this is just insurance
-	        if (padStats.water_limit > 0)
-	        {
-	            if (padStats.sequential_waters > padStats.water_limit)
-	            {
-	            	sysExecData.faultWaterDetect = true;
-	                padStats.sequential_waters = 0;
-	                sysExecData.waterDetectResets++;
+        // prevent stuck on from occurring.. this is just insurance
+        if (padStats.water_limit > 0)
+        {
+            if (padStats.sequential_waters > padStats.water_limit)
+            {
+            	sysExecData.faultWaterDetect = true;
+                padStats.sequential_waters = 0;
+                sysExecData.waterDetectResets++;
 #ifdef WATER_DEBUG
-	                debug_message("***WATER STUCK!***");
-	                __delay_cycles(1000);
+                debug_message("***WATER STUCK!***");
+                __delay_cycles(1000);
 #endif
-	            } // end if water stuck condition is seen
-	        } // end if water stuck detection is enabled
-	    } // end if water detect not stopped
-        else
-           padStats.sequential_waters = 0;
-
+            } // end if water stuck condition is seen
+        } // end if water stuck detection is enabled
     } // end if num submerged pads 
     else
     {
@@ -392,7 +386,7 @@ uint8_t waterSense_analyzeData(uint8_t num_samples)
     // debug messages are selected/deselected in debugUart.h
     uint32_t sys_time = getSecondsSinceBoot();
 
-    debug_padSummary(sys_time, numOfSubmergedPads, unknowns, padStats.pump_active, 0, padStats.trickleVolume, padStats.margin_growth);
+    debug_padSummary(sys_time, numOfSubmergedPads, unknowns, padStats.pump_active, 0, padStats.trickleVolume);
 #endif
 
     // if the pump is idle and now at Level 3 or higher, it's a new session

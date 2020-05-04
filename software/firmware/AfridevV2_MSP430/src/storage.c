@@ -57,6 +57,12 @@
 #define TOTAL_SECONDS_IN_A_MINUTE ((uint8_t)60)
 
 /**
+ * \def FULL_DAY_SECONDS
+ * \brief For clarity in the code
+ */
+#define FULL_DAY_SECONDS ((uint32_t)86400)
+
+/**
  * \def FLASH_WRITE_ONE_BYTE
  * \brief For clarity in the code
  */
@@ -121,7 +127,7 @@ typedef struct __attribute__((__packed__))dailyLog_s {
     uint16_t totalLiters;                                  /**< 02, 48-49 */
     uint16_t averageLiters;                                /**< 02, 50-51 */
     uint8_t redFlag;                                       /**< 01, 52    */
-    uint8_t outOfSpec;                                     /**< 01, 53    */
+    uint8_t reserverd;                                     /**< 01, 53    */
     uint16_t unknowns;                                     /**< 02, 54-55 */
     uint16_t padSubmergedCount[6];                         /**< 12, 56-67 */
 } dailyLog_t;
@@ -204,7 +210,6 @@ storageData_t stData;
  * Module Prototypes
  *********************/
 
-static bool doesAlignTimeMatch(void);
 static void recordLastMinute(void);
 static void recordLastHour(void);
 static void recordLastDay(void);
@@ -223,10 +228,13 @@ static void markDailyLogAsTransmitted(uint8_t dayOfTheWeek, uint8_t weeklyLogNum
 static bool wasDailyLogTransmitted(uint8_t dayOfTheWeek, uint8_t weeklyLogNum);
 static void checkAndTransmitMonthlyCheckin(void);
 static void checkAndTransmitDailyLogs(bool overrideTransmissionRate);
-static void clearAlignStats(void);
 
 #if (DO_RED_FLAG_PROCESSING != 0)
 static bool redFlagProcessing(int16_t dayLiterSum);
+#endif
+
+#ifdef SEND_DEBUG_TIME_DATA
+       int8_t TimeStamp_LastHour = 0;
 #endif
 
 /***************************
@@ -258,6 +266,11 @@ void storageMgr_init(void)
     // Erase flash for all the weekly data logs
     storageMgr_resetWeeklyLogs();
 
+#ifdef SEND_DEBUG_TIME_DATA
+    // the system time starts at 0, before the clock setting message is received
+    TimeStamp_LastHour = 0;
+#endif
+
     // Set default transmission rate
     stData.transmissionRateInDays = STORAGE_TRANSMISSION_RATE_DEFAULT;
 }
@@ -269,34 +282,7 @@ void storageMgr_init(void)
 */
 void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 {
-
-    // If we are waiting for an alignment event to occur, see if there
-    // is a match (GMT time == alignment time).
-    if (stData.alignStorageFlag == true)
-    {
-        // Decrement our safety down counter.
-        // We use a safety down-counter to make sure that we don't wait more
-        // than 24 hours for the alignment event to occur.
-        stData.alignSafetyCheckInSec -= time_elapsed;
-        if (doesAlignTimeMatch() || (stData.alignSafetyCheckInSec < 0))
-        {
-            // If the current time is equal to the storage offset,
-            // then zero storage time and clear storage memory
-            stData.alignStorageFlag = false;
-            clearAlignStats();
-            storageMgr_resetWeeklyLogs();
-            // Write daily log header for today if activated
-            if (stData.daysActivated)
-            {
-                prepareDailyLog();
-            }
-        }
-        // Don't start storing any data until we are officially aligned.
-#ifdef WATER_DEBUG
-        debug_message("*ALIGN*");
-#endif
-        return;
-    }
+    timePacket_t NowTime;
 
     // Update the flow rate per minute running sum (in milliliters)
     stData.minuteMilliliterSum += currentFlowRateInMLPerSec;
@@ -309,20 +295,27 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 
     if (stData.storageTime_seconds >= TOTAL_SECONDS_IN_A_MINUTE)
     {
+        // Record data
+        recordLastMinute();
         // Update time
         stData.storageTime_minutes++;
         stData.storageTime_seconds -= TOTAL_SECONDS_IN_A_MINUTE;
-
-        // Record data
-        recordLastMinute();
+   
+#ifdef SEND_DEBUG_TIME_DATA   
+        getBinTime(&NowTime);  
+        // detect an hour change and send the timestamp
+        if (TimeStamp_LastHour != NowTime.hour24) 
+        {
+           sysExecData.sendTimeStamp = true;
+        }
+        TimeStamp_LastHour = NowTime.hour24;
+#endif
     }
 #ifdef WATER_DEBUG
     // signal a wakeup if it is not on a minute boundary
     else if (time_elapsed > 2)
     {
-        timePacket_t NowTime;
         uint32_t sys_time = getSecondsSinceBoot();
-
         getBinTime(&NowTime);
         debug_RTC_time(&NowTime,'W',&stData, sys_time);
     }
@@ -337,9 +330,6 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
         stData.storageTime_minutes -= TOTAL_MINUTES_IN_A_HOUR;
 
 
-#ifdef SEND_DEBUG_TIME_DATA
-        sysExecData.sendTimeStamp = true;
-#endif
     }
     if (stData.storageTime_hours >= TOTAL_HOURS_IN_A_DAY)
     {
@@ -386,56 +376,122 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 }
 
 /**
-* \brief Save the GMT time values that the storage clock 
-*        midnight should be aligned with. These will be compared
-*        to current GMT time for a match.  All storage
-*        operations are stopped until the GMT match time occurs.
+* \brief Save the GMT time values into the storage clock.
+* 
 * \ingroup PUBLIC_API
 * 
-* @param alignSecond  GMT storage clock alignment second value 
-* @param alignMinute  GMT storage clock alignment minute value 
-* @param alignHour24  GMT storage clock alignment hour value 
+* @param rtcSecond  GMT storage clock second value 
+* @param rtcMinute  GMT storage clock minute value 
+* @param rtcHour24  GMT storage clock hour value 
 */
-void storageMgr_setStorageAlignmentTime(uint8_t alignSecond, uint8_t alignMinute, uint8_t alignHour24)
+void storageMgr_syncStorageTime(uint8_t rtc_Second, uint8_t rtc_Minute, uint8_t rtc_Hour24)
+{  
+    uint8_t diff_time;
+ 
+    // set the storage clock to be the same as the rtc
+    stData.storageTime_seconds = rtc_Second;
+    stData.storageTime_minutes = rtc_Minute;
+
+    if (stData.storageTime_hours > rtc_Hour24)
+       diff_time = stData.storageTime_hours - rtc_Hour24;
+    else
+       diff_time = rtc_Hour24 - stData.storageTime_hours;
+
+    // time change is due to clock set
+    if (diff_time > 1)
+       stData.storageTime_hours = rtc_Hour24;
+
+    // we dont want the storage system to miss the hour transition to report data.  Reflect
+    // the hour change by setting the minutes to exceed 60 so the next storage period will catch the hour change
+    // only a 1 hour change maximum is possible
+    else if (stData.storageTime_hours != rtc_Hour24) {
+        stData.storageTime_minutes += 60;   // add the hour to the minutes
+        if (!stData.storageTime_hours)
+           stData.storageTime_hours = 23;   // wrap around
+        else
+           stData.storageTime_hours-=1;     // subtract the hour moved to minutes
+    }
+}
+
+/**
+* \brief Save the GMT time values into the storage clock and reset storage data.
+*
+* \ingroup PUBLIC_API
+*
+* @param rtcSecond  GMT storage clock second value
+* @param rtcMinute  GMT storage clock minute value
+* @param rtcHour24  GMT storage clock hour value
+*/
+void storageMgr_setStorageTime(uint8_t rtc_Second, uint8_t rtc_Minute, uint8_t rtc_Hour24)
 {
+    // set the storage clock to be the same as the rtc
+    stData.storageTime_seconds = rtc_Second;
+    stData.storageTime_minutes = rtc_Minute;
+    stData.storageTime_hours = rtc_Hour24;
+    stData.storageTime_dayOfWeek = 0;
+    stData.storageTime_week = 0;
+    stData.minuteMilliliterSum = 0;
+    stData.hourMilliliterSum = 0;
+    stData.dayMilliliterSum = 0;
+#ifdef SEND_DEBUG_TIME_DATA
+    TimeStamp_LastHour = rtc_Hour24;
+#endif
+}
 
-    bool alignTimeIsValid = true;
-
-    stData.alignSecond = alignSecond;
-    stData.alignMinute = alignMinute;
-    stData.alignHour24 = alignHour24;
-
-    // Validate for legal values.
-    if (alignSecond > 59)
+/**
+* \brief Save the GMT time values into the storage clock.
+* 
+* \ingroup PUBLIC_API
+* 
+* @param rtcSecond  GMT storage clock second value 
+* @param rtcMinute  GMT storage clock minute value 
+* @param rtcHour24  GMT storage clock hour value 
+*/
+void storageMgr_adjustStorageTime(uint8_t hours24Offset)
+{   
+    uint8_t hours24;
+    timePacket_t tp;  
+    int8_t hoursdiff;
+    
+    // get rtc
+    getBinTime(&tp);
+    
+    hours24 = tp.hour24 + hours24Offset;
+    
+    // handle wrap around of hours
+    if (hours24 > 23)
     {
-        alignTimeIsValid = false;
+        hours24 -= 24;       
+        // figure out what the TZ diff is
+        if (hours24 > tp.hour24) 
+            hoursdiff = (tp.hour24 + 24 - hours24Offset)*-1;
+        else
+            hoursdiff = (hours24 + 24 - tp.hour24);         
     }
-    else if (alignMinute > 59)
+    else
     {
-        alignTimeIsValid = false;
+        // the TZ diff is positive
+        hoursdiff = hours24Offset;
     }
-    else if (alignHour24 > 23)
+    
+    if (hoursdiff < 0 && hours24 > tp.hour24)
     {
-        alignTimeIsValid = false;
+        // we are going back a day
+        if (!stData.storageTime_dayOfWeek)
+           stData.storageTime_dayOfWeek = 6;
+        else
+           stData.storageTime_dayOfWeek--;  
     }
-
-    if (alignTimeIsValid)
+    else if (hoursdiff > 0 && tp.hour24 > hours24)
     {
-        // Set the flag that we are waiting for an alignment event
-        stData.alignStorageFlag = true;
-        clearAlignStats();
-
-        // We create a safety down-counter in seconds to make sure that we don't
-        // miss the alignment event.  The alignment event is currently
-        // dependent on matching the alignment time against the unit's GMT
-        // clock.  The two must match exactly for the alignment to occur.  If
-        // for some reason the unit is busy and the check is not performed at
-        // that exact time, then the unit will never get out of the alignment
-        // waiting phase. The safety down-counter will catch that situation.
-
-        // Set safety alignment check time counter
-        stData.alignSafetyCheckInSec = ((sys_tick_t)SECONDS_PER_DAY);
+        // we are going ahead a day
+        if (stData.storageTime_dayOfWeek >= 7)
+           stData.storageTime_dayOfWeek = 0;
+        else
+           stData.storageTime_dayOfWeek++;  
     }
+    // change the storage clock to be time zone adjusted
+    stData.storageTime_hours = hours24;
 }
 
 /**
@@ -672,10 +728,10 @@ uint8_t storageMgr_getStorageClockInfo(uint8_t *bufP)
     *bufP++ = stData.storageTime_hours;                    /**< Current storage time - hour */
     *bufP++ = stData.storageTime_dayOfWeek;                /**< Current storage time - day  */
     *bufP++ = stData.storageTime_week;                     /**< Current storage time - week */
-    *bufP++ = stData.alignStorageFlag;                     /**< True if time to align storage time */
-    *bufP++ = stData.alignSecond;                          /**< Time to align at - sec */
-    *bufP++ = stData.alignMinute;                          /**< Time to align at - min */
-    *bufP++ = stData.alignHour24;                          /**< Time to align at - hour */
+    *bufP++ = false;                                       /**< True if time to align storage time */
+    *bufP++ = 0;                                           /**< Time to align at - sec, not needed */
+    *bufP++ = 0;                                           /**< Time to align at - min, not needed */
+    *bufP++ = 0;                                           /**< Time to align at - hour, not needed */
     return (9);
 }
 
@@ -954,6 +1010,7 @@ static void recordLastDay(void)
 {
 
     uint16_t temp;
+    uint8_t log_hour;
     bool newRedFlagCondition = false;
 
     // Only write to daily log in flash if unit is activated
@@ -964,6 +1021,14 @@ static void recordLastDay(void)
 
         // Get pointer to today's dailyLog in flash.
         dailyLog_t *dailyLogsP = getDailyLogAddr(stData.curWeeklyLogNum, stData.storageTime_dayOfWeek);
+        
+        // zero out leading liter counts that were not filled in because of a partial day of data
+        for (log_hour = 0; log_hour < 24; log_hour++){
+            if (dailyLogsP->litersPerHour[log_hour] == 0xFFFF) {
+                msp430Flash_write_int16((uint8_t *)&(dailyLogsP->litersPerHour[log_hour]), 0);
+                WATCHDOG_TICKLE();
+            }
+        }
 
         // Write data stats to dailyLog
         writeStatsToDailyLog();
@@ -1056,7 +1121,6 @@ static void writeStatsToDailyLog(void)
     uint8_t *addr;
     uint16_t i = 0;
     uint16_t u16Val;
-    uint8_t u8Val;
 
     // Get pointer to today's dailyLog in flash.
     dailyLog_t *dailyLogsP = getDailyLogAddr(stData.curWeeklyLogNum, stData.storageTime_dayOfWeek);
@@ -1067,15 +1131,12 @@ static void writeStatsToDailyLog(void)
         addr = (uint8_t *)&(dailyLogsP->padSubmergedCount[i]);
         u16Val = waterSense_getPadStatsSubmerged((padId_t)i);
         msp430Flash_write_int16(addr, u16Val);
+
     }
     // Write unknown stat to flash
     addr = (uint8_t *)&(dailyLogsP->unknowns);
     u16Val = waterSense_getPadStatsUnknowns();
     msp430Flash_write_int16(addr, u16Val);
-
-    // Write outOfSpec status to flash
-    u8Val = sysExecData.waterDetectStopped;
-    msp430Flash_write_bytes((uint8_t *)&(dailyLogsP->outOfSpec), (uint8_t *)&u8Val, FLASH_WRITE_ONE_BYTE);
 
     // Clear all the pad statistics
     waterSense_clearStats();
@@ -1121,18 +1182,43 @@ static bool redFlagProcessing(int16_t dayLiterSum)
         // Re-check redflag condition - as it may have been cleared above
         if (!stData.redFlagCondition)
         {
+#if defined(REDFLAG_VERSION) && REDFLAG_VERSION==2
+            // this test will exclude when the dayLiterSum is zero and the quarterValue is zero
+            if( dayLiterSum == 0)
+            {
+#elif defined(REDFLAG_VERSION) && REDFLAG_VERSION==1
             // The redflag condition is set if todays liter total falls below 25% of threshold
             // Check if today's daily liters fall below 25% of threshold
             uint16_t quarterValue = redFlagDayThreshValue >> 2;
 
-            if ((dayLiterSum < quarterValue) && (redFlagDayThreshValue > MIN_DAILY_LITERS_TO_SET_REDFLAG_CONDITION))
+            if( dayLiterSum < quarterValue)
             {
-                // Red flag condition is met
-                stData.redFlagCondition = true;
-                stData.redFlagDayCount = 1;
-                newRedFlagCondition = true;
-            }
-            else
+#else
+            if(0)
+            {
+#endif
+#if defined(REDFLAG_VERSION) && REDFLAG_VERSION==2
+                // the client requests to trigger a red flag only when the current water measurement is 0,
+                // excluding when this 4-week average equals 0
+                if  (redFlagDayThreshValue != 0)
+                {
+                    // Red flag condition is met
+                    stData.redFlagCondition = true;
+                    stData.redFlagDayCount = 1;
+                    newRedFlagCondition = true;
+                }
+#elif defined(REDFLAG_VERSION) && REDFLAG_VERSION==1
+                // this is the original Red Flag criteria from the original requirements
+                if (redFlagDayThreshValue > MIN_DAILY_LITERS_TO_SET_REDFLAG_CONDITION)
+                {
+                    // Red flag condition is met
+                    stData.redFlagCondition = true;
+                    stData.redFlagDayCount = 1;
+                    newRedFlagCondition = true;
+                }
+#endif
+            } // end if dailyTotal is less than 25% of historical data
+            if (!newRedFlagCondition)
             {
                 // Update the threshold table with a new value based on 75% threshold and 25% today's dailyLiters
                 temp = redFlagDayThreshValue + redFlagDayThreshValue + redFlagDayThreshValue + dayLiterSum;
@@ -1172,47 +1258,6 @@ static bool redFlagProcessing(int16_t dayLiterSum)
 }
 #endif
 
-/**
-* \brief Utility routine to check if the alignment time matches 
-*        the current GMT time for seconds, minutes and hours.
-* \note We currently don't match seconds, as it should not be 
-*       needed and adds risk to missing the align time window.
-*       We need to add some leeway with minute matching because of
-*       the 20 sleep mode and the possible lag of the clock over a day
-* 
-* @return bool Returns true if a match occurred.
-*/
-static bool doesAlignTimeMatch(void)
-{
-    timePacket_t NowTime;
-    uint8_t hour_diff;
-    uint8_t minute_diff;
-
-    getBinTime(&NowTime);
-
-    // we need to know how many minutes are between the align point and NOW
-    // this might wrap around midnight so it is tricky
-    if (NowTime.hour24 != stData.alignHour24)
-    {
-       if (NowTime.hour24 > stData.alignHour24)
-          hour_diff = 24 - NowTime.hour24 + stData.alignHour24;
-       else
-          hour_diff = stData.alignHour24 - NowTime.hour24;
-       hour_diff--;
-    }
-    else
-       hour_diff = 0;
-
-    if (!hour_diff && NowTime.minute > stData.alignMinute)
-       minute_diff = 60 - NowTime.minute + stData.alignMinute;
-    else
-       minute_diff = stData.alignMinute - NowTime.minute;
-
-    // if the NOW time is within 5 minutes of the align time it's good
-    // the range is so the system will still work even if the time jumps due to
-    // 20 second sleep cycles
-    return (minute_diff < 5);
-}
 
 /**
 *  \brief Utility function to get the address from the weekly
@@ -1458,22 +1503,6 @@ static bool wasDailyLogTransmitted(uint8_t dayOfTheWeek, uint8_t weeklyLogNum)
 
     // If zero, it means we transmitted packet.
     return (wlP->clearOnTransmit[dayOfTheWeek] ? false : true);
-}
-
-/**
-* \brief clear stats that are reset when the storage clock is 
-*        restarted/aligned.
-*/
-static void clearAlignStats(void)
-{
-    stData.storageTime_seconds = 0;
-    stData.storageTime_minutes = 0;
-    stData.storageTime_hours = 0;
-    stData.storageTime_dayOfWeek = 0;
-    stData.storageTime_week = 0;
-    stData.minuteMilliliterSum = 0;
-    stData.hourMilliliterSum = 0;
-    stData.dayMilliliterSum = 0;
 }
 
 #ifdef SEND_DEBUG_TIME_DATA

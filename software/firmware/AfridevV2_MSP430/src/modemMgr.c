@@ -605,6 +605,7 @@ static void modemMgr_batchWriteStateMachine(void)
 static void modemMgr_shutdownStateMachine(void)
 {
     bool continue_processing = false;
+    timePacket_t tp;
 
     do
     {
@@ -649,6 +650,11 @@ static void modemMgr_shutdownStateMachine(void)
                 mwBatchData.shutdownActive = false;
                 mwBatchData.allocated = false;
                 mwBatchData.mmShutdownState = M_SHUTDOWN_STATE_IDLE;
+
+                // get rtc and synch storage clock to current time.  The modem session eats up a few
+                // minutes and we need to keep the time accurate
+                getBinTime(&tp);
+                storageMgr_syncStorageTime(tp.second, tp.minute, tp.hour24);
                 break;
         }
     } while (continue_processing);

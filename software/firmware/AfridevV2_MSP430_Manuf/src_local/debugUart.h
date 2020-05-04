@@ -54,7 +54,7 @@ extern uint8_t dbg_uart_txqempty(void);
 extern uint8_t dbg_uart_txpend(void);
 extern uint8_t dbg_uart_read(void);
 extern void debug_message(uint8_t *message);
-void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline, uint16_t trickleVol, uint16_t margin_growth);
+void debug_padSummary(uint32_t sys_time, uint8_t level, uint8_t unknowns, uint8_t pump_active, uint8_t baseline, uint16_t trickleVol);
 void debug_logSummary(uint8_t context, uint32_t sys_time, uint8_t hour, uint16_t  litersForThisHour, uint32_t dayMilliliterSum);
 void debug_daySummary(uint8_t context, uint32_t sys_time, uint16_t daysActivated, bool redFlagReady, uint32_t dayMilliliterSum,
 		              uint32_t activatedLiterSum, uint16_t dayThreshold, bool newRedFlagCondition);
