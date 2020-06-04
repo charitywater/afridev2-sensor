@@ -46,7 +46,7 @@
 //#define SLEEP_DEBUG 1
 //#define DEBUG_BATTERY_TEST 1
 //#define DEBUG_SEND_SENSOR_DATA_NOW 1
-#define DEBUG_DAILY_WATER_REPORTS 1
+//#define DEBUG_DAILY_WATER_REPORTS 1
 //#define RED_FLAG_TEST 1
 //#define TRICKLE_VOLUME_ELIMINATE 1
 //#define SEND_DEBUG_TIME_DATA 1
@@ -100,14 +100,14 @@
  * \def FW_VERSION_MAJOR
  * \brief Specify the AfridevV2 firmware major version number.
  */
-#define FW_VERSION_MAJOR ((uint8_t)0x03)
+#define FW_VERSION_MAJOR ((uint8_t)0x04)
 
 /**
  * \def FW_VERSION_MINOR
  * \brief Specify the AfridevV2 firmware minor version number. 
  *        The sign bit is set when the orientation of the sensor is inverted
  */
-#define FW_MINOR 28
+#define FW_MINOR 0
 #ifndef WATERDETECT_READ_WATER_LEVEL_NORMAL
 #define FW_VERSION_MINOR ((uint8_t)(FW_MINOR|0x80))
 #else
