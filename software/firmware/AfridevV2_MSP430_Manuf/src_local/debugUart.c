@@ -740,6 +740,39 @@ int gps_debug_field(uint8_t *dest, GGA_FIELD_NAMES field_num, uint16_t cursor, u
 	return(i);
 }
 
+static uint8_t make_bcd_time(uint8_t *value)
+{
+    uint8_t answer = (*value-'0')<<4;
+    value++;
+    answer += (*value-'0');
+    return (answer);
+}
+
+static void set_rtc_and_storage_time(uint8_t hourbcd, uint8_t minbcd, uint8_t secbcd)
+{
+    uint8_t hour10 = (hourbcd>>4)*10+(hourbcd&0x0f);
+    uint8_t ampm = 0;
+    timePacket_t tp;
+
+    // adjust time to am/pm time for setting. The time code displays military time
+    // but internally the rtc library only supports am/pm time
+    // if hour goes higher than 12 in the RTC library, then midnight will not wrap
+    // after the 23 hour
+    if(hour10>=12)
+    {
+        ampm = 1;
+        if (hour10>12)
+           hour10 -= 12;
+        if (hour10 > 10)
+           hourbcd = (hour10-10)+0x10;
+        else
+           hourbcd = hour10;
+    }
+    // h, m, s, am/pm (must be in BCD)
+    setTime(hourbcd,minbcd,secbcd,ampm);
+    getBinTime(&tp);
+    storageMgr_syncStorageTime(tp.second, tp.minute, tp.hour24);
+}
 
 void gps_debug_minmea_summary(uint8_t *gga, bool valid)
 {
@@ -766,11 +799,16 @@ void gps_debug_minmea_summary(uint8_t *gga, bool valid)
     			gps_report.time[i++]='@';
     			if(parsebuf[GGA_TIME][0])
     			{
+    			    uint8_t hourbcd,minbcd,secbcd;
 				    i += gps_debug_field(&gps_report.time[i],GGA_TIME, 0, 2);
+                    hourbcd = make_bcd_time(&gps_report.time[1]);
 				    gps_report.time[i++]=':';
 					i += gps_debug_field(&gps_report.time[i],GGA_TIME, 2, 2);
+                    minbcd = make_bcd_time(&gps_report.time[4]);
 					gps_report.time[i++]=':';
 					i += gps_debug_field(&gps_report.time[i],GGA_TIME, 4, 2);
+                    secbcd = make_bcd_time(&gps_report.time[7]);
+                    set_rtc_and_storage_time(hourbcd,minbcd,secbcd);
     			}
     			else
     			{

@@ -702,7 +702,7 @@ static bool otaMsgMgr_processGmtClocksetPart2(void)
         getBinTime(&tp);
         
         // When the GMT time is set, set the storage clock to the same time
-        storageMgr_setStorageTime(tp.second, tp.hour24, tp.minute); 
+        storageMgr_setStorageTime(tp.second, tp.minute, tp.hour24); 
 
         otaData.gmtTimeHasBeenUpdated = true;
         otaData.gmtTimeUpdateCandidate = false;

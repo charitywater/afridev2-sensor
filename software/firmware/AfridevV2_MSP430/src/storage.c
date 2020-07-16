@@ -211,7 +211,7 @@ storageData_t stData;
  *********************/
 
 static void recordLastMinute(void);
-static void recordLastHour(void);
+static void recordLastHour(uint8_t hour_to_store);
 static void recordLastDay(void);
 static void writeStatsToDailyLog(void);
 static weeklyLog_t* getWeeklyLogAddr(uint8_t weeklyLogNum);
@@ -283,24 +283,21 @@ void storageMgr_init(void)
 void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 {
     timePacket_t NowTime;
+    uint8_t last_minute = stData.storageTime_minutes;
+    uint8_t last_hour24 = stData.storageTime_hours;
 
     // Update the flow rate per minute running sum (in milliliters)
     stData.minuteMilliliterSum += currentFlowRateInMLPerSec;
 
-    // Increment the unit of time, record the amount of water, reset the previous unit of time
+    // get the latest RTC, and compare to last storage clock
+    getBinTime(&NowTime);
+    storageMgr_syncStorageTime(NowTime.second, NowTime.minute, NowTime.hour24);
 
-    // Note: this function is called every two seconds by the main loop.
-    // unless we were in sleep mode
-    stData.storageTime_seconds += time_elapsed;
-
-    if (stData.storageTime_seconds >= TOTAL_SECONDS_IN_A_MINUTE)
+    // check for a rollover of the minute
+    if (NowTime.minute != last_minute)
     {
-        // Record data
         recordLastMinute();
-        // Update time
-        stData.storageTime_minutes++;
-        stData.storageTime_seconds -= TOTAL_SECONDS_IN_A_MINUTE;
-   
+
 #ifdef SEND_DEBUG_TIME_DATA   
         getBinTime(&NowTime);  
         // detect an hour change and send the timestamp
@@ -311,68 +308,66 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
         TimeStamp_LastHour = NowTime.hour24;
 #endif
     }
+
+    if (NowTime.hour24 != last_hour24)
+    {
+        // Record data
+        recordLastHour(last_hour24);
+
+        if (NowTime.hour24 == 0)
+        {
+            // Record data
+            // The recordLastDay does a number of house-keeping chores:
+            // (1) If the unit is activated, it stores today's water log
+            // states to flash.
+            // (2) It potentially starts the transmission of
+            // the daily water log message.
+            // (3) It will also potentially activate the Sensor
+            // and starts the Activate message transmission.
+            recordLastDay();
+
+            // Update Time
+            stData.storageTime_dayOfWeek++;
+
+            // Prepare data storage for next day
+            if (stData.storageTime_dayOfWeek < TOTAL_DAYS_IN_A_WEEK)
+            {
+                // Write daily log header for day if activated
+                if (stData.daysActivated)
+                {
+                    prepareDailyLog();
+                }
+            }
+
+            if (stData.storageTime_dayOfWeek >= TOTAL_DAYS_IN_A_WEEK)
+            {
+                // Update Time
+                stData.storageTime_dayOfWeek = 0;
+                stData.storageTime_week++;
+                // Prepare data storage for next week and day
+                prepareNextWeeklyLog();
+                // Write daily log header for day if activated
+                if (stData.daysActivated)
+                {
+                    prepareDailyLog();
+                }
+                // Check if its time to send a monthly checkin message.
+                // We only send the message if we are not activated and four
+                // weeks have passed.
+                checkAndTransmitMonthlyCheckin();
+            }
+        } // end if mignight
+    } // end if hour change
+
 #ifdef WATER_DEBUG
     // signal a wakeup if it is not on a minute boundary
-    else if (time_elapsed > 2)
+    if (time_elapsed > 2)
     {
         uint32_t sys_time = getSecondsSinceBoot();
         getBinTime(&NowTime);
         debug_RTC_time(&NowTime,'W',&stData, sys_time);
     }
 #endif
-    if (stData.storageTime_minutes >= TOTAL_MINUTES_IN_A_HOUR)
-    {
-        // Record data
-        recordLastHour();
-		
-        // Update time
-        stData.storageTime_hours++;
-        stData.storageTime_minutes -= TOTAL_MINUTES_IN_A_HOUR;
-
-
-    }
-    if (stData.storageTime_hours >= TOTAL_HOURS_IN_A_DAY)
-    {
-        // Record data
-        // The recordLastDay does a number of house-keeping chores:
-        // (1) If the unit is activated, it stores today's water log
-        // states to flash.
-        // (2) It potentially starts the transmission of
-        // the daily water log message.
-        // (3) It will also potentially activate the Sensor
-        // and starts the Activate message transmission.
-        recordLastDay();
-        // Update Time
-        stData.storageTime_dayOfWeek++;
-        stData.storageTime_hours -= TOTAL_HOURS_IN_A_DAY;
-
-        // Prepare data storage for next day
-        if (stData.storageTime_dayOfWeek < TOTAL_DAYS_IN_A_WEEK)
-        {
-            // Write daily log header for day if activated
-            if (stData.daysActivated)
-            {
-                prepareDailyLog();
-            }
-        }
-    }
-    if (stData.storageTime_dayOfWeek >= TOTAL_DAYS_IN_A_WEEK)
-    {
-        // Update Time
-        stData.storageTime_dayOfWeek = 0;
-        stData.storageTime_week++;
-        // Prepare data storage for next week and day
-        prepareNextWeeklyLog();
-        // Write daily log header for day if activated
-        if (stData.daysActivated)
-        {
-            prepareDailyLog();
-        }
-        // Check if its time to send a monthly checkin message.
-        // We only send the message if we are not activated and four
-        // weeks have passed.
-        checkAndTransmitMonthlyCheckin();
-    }
 }
 
 /**
@@ -386,31 +381,10 @@ void storageMgr_exec(uint16_t currentFlowRateInMLPerSec, uint8_t time_elapsed)
 */
 void storageMgr_syncStorageTime(uint8_t rtc_Second, uint8_t rtc_Minute, uint8_t rtc_Hour24)
 {  
-    uint8_t diff_time;
- 
     // set the storage clock to be the same as the rtc
     stData.storageTime_seconds = rtc_Second;
     stData.storageTime_minutes = rtc_Minute;
-
-    if (stData.storageTime_hours > rtc_Hour24)
-       diff_time = stData.storageTime_hours - rtc_Hour24;
-    else
-       diff_time = rtc_Hour24 - stData.storageTime_hours;
-
-    // time change is due to clock set
-    if (diff_time > 1)
-       stData.storageTime_hours = rtc_Hour24;
-
-    // we dont want the storage system to miss the hour transition to report data.  Reflect
-    // the hour change by setting the minutes to exceed 60 so the next storage period will catch the hour change
-    // only a 1 hour change maximum is possible
-    else if (stData.storageTime_hours != rtc_Hour24) {
-        stData.storageTime_minutes += 60;   // add the hour to the minutes
-        if (!stData.storageTime_hours)
-           stData.storageTime_hours = 23;   // wrap around
-        else
-           stData.storageTime_hours-=1;     // subtract the hour moved to minutes
-    }
+    stData.storageTime_hours = rtc_Hour24;
 }
 
 /**
@@ -940,7 +914,7 @@ static void recordLastMinute(void)
         // debug messages are selected/deselected in debugUart.h
         uint32_t sys_time = getSecondsSinceBoot();
 
-        //debug_logSummary('M', sys_time, stData.storageTime_hours, stData.minuteMilliliterSum, stData.hourMilliliterSum);
+        debug_logSummary('M', sys_time, stData.storageTime_hours, stData.minuteMilliliterSum, stData.hourMilliliterSum);
 
         getBinTime(&NowTime);
         debug_RTC_time(&NowTime,'M',&stData, sys_time);
@@ -958,14 +932,14 @@ static void recordLastMinute(void)
  * \note The hourly water volume is stored in the log as Total 
  *     Milliliters/32
  */
-static void recordLastHour(void)
+static void recordLastHour(uint8_t hour_to_store)
 {
 
     // Get pointer to today's dailyLog in flash.
     dailyLog_t *dailyLogsP = getDailyLogAddr(stData.curWeeklyLogNum, stData.storageTime_dayOfWeek);
 
     // Get address to liters parameter in the dailyLog
-    uint8_t *addr = (uint8_t *)&(dailyLogsP->litersPerHour[stData.storageTime_hours]);
+    uint8_t *addr = (uint8_t *)&(dailyLogsP->litersPerHour[hour_to_store]);
     uint16_t litersForThisHour = 0;
 
     // The hourly water volume is stored in the log as Total Milliliters/32
@@ -1012,7 +986,7 @@ static void recordLastDay(void)
     uint16_t temp;
     uint8_t log_hour;
     bool newRedFlagCondition = false;
-
+    
     // Only write to daily log in flash if unit is activated
     if (stData.daysActivated)
     {
@@ -1108,7 +1082,7 @@ static void recordLastDay(void)
                          stData.activatedLiterSum, stData.redFlagThreshTable[dayOfTheWeek], newRedFlagCondition);
     }
 #endif
-
+    
     // Reset the daily based statistics
     stData.dayMilliliterSum = 0;
 }

@@ -440,7 +440,7 @@ bool manufRecord_manuf_test_init()
 #ifdef NO_GPS_TEST
     if (1) {
 #else
-	if (mTestGPSDone()) {
+	if (0) {  // always done to set RTS automatically on debug
 #endif
 		if (mTestWaterDone())
 		{

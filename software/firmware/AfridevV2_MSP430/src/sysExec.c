@@ -94,12 +94,15 @@ uint8_t lowPowerMode_check(uint16_t currentFlowRateInMLPerSec);
 #ifdef SEND_DEBUG_INFO_TO_UART
 static void sysExec_sendDebugDataToUart(void);
 #endif
+#ifdef SIMULATE
+uint16_t simulateWaterAnalysis(uint8_t num_samples);
+#endif
 
 /***************************
  * Module Public Functions
  **************************/
 
-uint16_t processWaterAnalysis(num_samples)
+uint16_t processWaterAnalysis(uint8_t num_samples)
 {
     uint16_t currentFlowRateInMLPerSec = 0;
 
@@ -269,7 +272,14 @@ void sysExec_exec(void)
                     temperature_loop_counter = 0;
                     waterSenseReadInternalTemp();
                 }
-                currentFlowRateInMLPerSec =  processWaterAnalysis(SAMPLE_COUNT);
+#ifndef SIMULATE
+                currentFlowRateInMLPerSec = processWaterAnalysis(SAMPLE_COUNT);
+#else
+                // run the simulation, if it is 0 for this second, use live data
+                currentFlowRateInMLPerSec = simulateWaterAnalysis(SAMPLE_COUNT);
+                if (!currentFlowRateInMLPerSec)
+                    currentFlowRateInMLPerSec = processWaterAnalysis(SAMPLE_COUNT);
+#endif
                 waterDetect_start();  // prepare for next session
             }
             else
@@ -289,7 +299,14 @@ void sysExec_exec(void)
                     // there is a perceived problem with the unit sleeping and not tracking water consumption while
                 	// sleeping.   This will update the water data between sleep attempts
                     waterSense_takeReading();
+#ifndef SIMULATE
                     currentFlowRateInMLPerSec = processWaterAnalysis(1);
+#else
+	                // run the simulation, if it is 0 for this second, use live data
+	                currentFlowRateInMLPerSec = simulateWaterAnalysis(1);
+	                if (!currentFlowRateInMLPerSec)
+	                    currentFlowRateInMLPerSec = processWaterAnalysis(1);
+#endif
 #ifdef WATER_DEBUG
                     uint32_t sys_time = getSecondsSinceBoot();
                     debug_pour_total(sys_time, currentFlowRateInMLPerSec);
