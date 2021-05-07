@@ -1,0 +1,11 @@
+**/codegen/mex/*
+**/examples/*
+**/html/*
+**/interface/*
+buildInfo.mat
+*.dmr
+codeInfo.mat
+traceInfo
+*.d_raw
+*.obj
+*.d

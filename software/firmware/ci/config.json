@@ -1,0 +1,35 @@
+{
+    "am_log_baud": "9600",
+    "am_cli_baud": "115200",
+    "ssm_baud": "9600",
+    "dta_list":
+    {
+        "00b0j":
+        {
+            "description": "CI Device",
+            "dta_ip": "192.168.2.204",
+            "power_port": "4",
+            "am_log_serial": "FT2QRLNC",
+            "am_cli_serial": "FT2QQT21",
+            "ssm_serial": "AH069ETZ"
+        },
+        "004dt":
+        {
+            "description": "Brad's Device",
+            "dta_ip": "192.168.2.208",
+            "power_port": "",
+            "am_log_serial": "FT2QQTWQ",
+            "am_cli_serial": "AQ00OQVP",
+            "ssm_serial": "AFV7FD94"
+        },
+        "b23a5":
+        {
+            "description": "Audrey's Device",
+            "dta_ip": "192.168.2.216",
+            "power_port": "",
+            "am_log_serial": "FTAD2ESC",
+            "am_cli_serial": "AM00LQ8N",
+            "ssm_serial": "AH069DNH"
+        }
+    }
+}
